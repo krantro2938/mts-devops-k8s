@@ -4,7 +4,6 @@
 # Besides a plain single control-plane setup it exposes the metrics endpoints
 # of the control-plane components so that Prometheus can scrape them
 # (by default kubeadm binds them to 127.0.0.1 and the targets show as DOWN).
----
 apiVersion: kubeadm.k8s.io/v1beta4
 kind: InitConfiguration
 localAPIEndpoint:
