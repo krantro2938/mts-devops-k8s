@@ -55,23 +55,24 @@
   </table>
 
   <h3>Архитектурная схема</h3>
-  <svg viewBox="0 0 760 330" width="100%" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 760 340" width="100%" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1b1f24"/></marker>
       <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0b5cad"/></marker>
       <marker id="o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9a6700"/></marker>
     </defs>
     <!-- cluster -->
-    <rect x="96" y="6" width="658" height="318" rx="6" fill="#fbfcfd" stroke="#8c959f" stroke-dasharray="5 3"/>
+    <rect x="96" y="6" width="658" height="330" rx="6" fill="#fbfcfd" stroke="#8c959f" stroke-dasharray="5 3"/>
     <text x="106" y="22" font-size="11" font-weight="700" fill="#57606a">Kubernetes v1.36 (kubeadm · containerd · Calico) — Ubuntu 24.04</text>
 
     <!-- user -->
-    <rect x="4" y="100" width="80" height="46" rx="23" fill="#fff" stroke="#1b1f24"/>
-    <text x="44" y="120" font-size="11" text-anchor="middle" font-weight="700">Пользователь</text>
-    <text x="44" y="135" font-size="9" text-anchor="middle">curl / браузер</text>
-    <line x1="84" y1="123" x2="118" y2="123" stroke="#1b1f24" stroke-width="1.6" marker-end="url(#a)"/>
-    <text x="100" y="114" font-size="8.5" text-anchor="middle">:30080</text>
-    <text x="100" y="140" font-size="8.5" text-anchor="middle">:30443</text>
+    <rect x="2" y="100" width="84" height="46" rx="8" fill="#fff" stroke="#1b1f24"/>
+    <text x="44" y="119" font-size="9.6" text-anchor="middle" font-weight="700">Пользователь</text>
+    <text x="44" y="134" font-size="8.6" text-anchor="middle">curl / браузер</text>
+    <line x1="86" y1="123" x2="130" y2="123" stroke="#1b1f24" stroke-width="1.6" marker-end="url(#a)"/>
+    <text x="40" y="160" font-size="8.6" text-anchor="middle">NodePort</text>
+    <text x="40" y="172" font-size="8.6" text-anchor="middle">:30080 http</text>
+    <text x="40" y="184" font-size="8.6" text-anchor="middle">:30443 https</text>
 
     <!-- gateway block -->
     <rect x="120" y="34" width="208" height="182" rx="5" fill="#eef5fc" stroke="#0b5cad"/>
@@ -131,21 +132,20 @@
     <!-- logs flow -->
     <path d="M456,216 L456,250 L592,224" fill="none" stroke="#9a6700" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#o)"/>
     <path d="M224,216 L224,262 L592,230" fill="none" stroke="#9a6700" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#o)"/>
-    <text x="300" y="257" font-size="8.8" fill="#9a6700">stdout/stderr → /var/log/containers</text>
-    <text x="300" y="269" font-size="8.8" fill="#9a6700">(access + error логи, JSON-поля, request_id)</text>
+    <text x="250" y="288" font-size="8.8" fill="#9a6700">stdout/stderr → /var/log/containers</text>
+    <text x="250" y="300" font-size="8.8" fill="#9a6700">(access + error логи, JSON-поля, request_id)</text>
 
     <!-- metrics flow -->
     <path d="M592,70 L540,70" fill="none" stroke="#1a7f37" stroke-width="1.5" stroke-dasharray="2 2" marker-end="url(#g)"/>
-    <path d="M594,80 C560,24 330,20 316,60" fill="none" stroke="#1a7f37" stroke-width="1.5" stroke-dasharray="2 2" marker-end="url(#g)"/>
-    <path d="M664,92 L664,104" fill="none" stroke="#1a7f37" stroke-width="0"/>
-    <path d="M700,180 L700,166" fill="none" stroke="#1a7f37" stroke-width="1.5" stroke-dasharray="2 2"/>
-    <text x="560" y="28" font-size="8.8" fill="#1a7f37">scrape: Envoy, EG, nginx, Fluentd, VictoriaLogs…</text>
+    <path d="M640,58 L640,29 L250,29 L250,33" fill="none" stroke="#1a7f37" stroke-width="1.5" stroke-dasharray="2 2" marker-end="url(#g)"/>
+        <path d="M700,182 L700,168" fill="none" stroke="#1a7f37" stroke-width="1.5" stroke-dasharray="2 2" marker-end="url(#g)"/>
+    <text x="742" y="22" font-size="8.6" text-anchor="end" fill="#1a7f37">scrape: Envoy, EG, nginx, Fluentd, VictoriaLogs, k8s</text>
 
     <!-- legend -->
-    <line x1="110" y1="300" x2="140" y2="300" stroke="#1b1f24" stroke-width="1.6" marker-end="url(#a)"/><text x="146" y="303" font-size="8.8">HTTP-трафик</text>
-    <line x1="220" y1="300" x2="250" y2="300" stroke="#1a7f37" stroke-width="1.5" stroke-dasharray="2 2" marker-end="url(#g)"/><text x="256" y="303" font-size="8.8">сбор метрик (pull)</text>
-    <line x1="360" y1="300" x2="390" y2="300" stroke="#9a6700" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#o)"/><text x="396" y="303" font-size="8.8">поток логов</text>
-    <text x="110" y="318" font-size="8.6" fill="#57606a">UI Grafana / Prometheus / Alertmanager / VictoriaLogs опубликованы через тот же Gateway (HTTPRoute по hostname, Basic Auth).</text>
+    <line x1="110" y1="314" x2="140" y2="314" stroke="#1b1f24" stroke-width="1.6" marker-end="url(#a)"/><text x="146" y="317" font-size="8.8">HTTP-трафик</text>
+    <line x1="220" y1="314" x2="250" y2="314" stroke="#1a7f37" stroke-width="1.5" stroke-dasharray="2 2" marker-end="url(#g)"/><text x="256" y="317" font-size="8.8">сбор метрик (pull)</text>
+    <line x1="360" y1="314" x2="390" y2="314" stroke="#9a6700" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#o)"/><text x="396" y="317" font-size="8.8">поток логов</text>
+    <text x="110" y="331" font-size="8.6" fill="#57606a">UI Grafana / Prometheus / Alertmanager / VictoriaLogs опубликованы через тот же Gateway (HTTPRoute по hostname, Basic Auth).</text>
   </svg>
 
   <div class="box small"><b>Как запустить:</b> на чистой Ubuntu 24.04 (4 vCPU / 8 GB):
@@ -193,7 +193,7 @@
       <td>README.md</td></tr>
   </table>
 
-  <h2>2.1 Дополнительные улучшения</h2>
+  <h2 style="page-break-before: always">2.1 Дополнительные улучшения</h2>
   <table class="func">
     <tr><th>Улучшение</th><th>Что и как реализовано</th><th>Обоснование</th><th>Как проверить</th></tr>
     <tr><td>Расширенный Gateway API</td>

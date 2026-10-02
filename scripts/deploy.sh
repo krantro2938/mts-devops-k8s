@@ -43,9 +43,12 @@ step_cni() {
   helm template calico-crds crd.projectcalico.org.v1 \
     --repo https://docs.tigera.io/calico/charts --version "${CALICO_VERSION}" | apply -f - >/dev/null
   kubectl wait --for=condition=Established crd --all --timeout=120s >/dev/null
+  # Client-side (3-way merge) apply: the operator writes defaults into the
+  # Installation spec (e.g. ipPools); with server-side apply a re-run would
+  # conflict with the "operator" field manager.
   helm upgrade --install calico tigera-operator \
     --repo https://docs.tigera.io/calico/charts --version "${CALICO_VERSION}" \
-    --namespace tigera-operator -f "${D}/cni/calico-values.yaml" "${HELM_ARGS[@]}"
+    --namespace tigera-operator -f "${D}/cni/calico-values.yaml" --server-side=false "${HELM_ARGS[@]}"
   log "Waiting for the operator to roll out calico-node"
   retry 60 5 kubectl get ns calico-system >/dev/null 2>&1 || die "calico-system namespace not created"
   retry 60 5 kubectl -n calico-system get daemonset calico-node >/dev/null 2>&1 || die "calico-node not created"
