@@ -46,7 +46,7 @@
   <table>
     <tr><td class="k">Версия Kubernetes</td><td><b>v1.36.5</b> (kubeadm / kubelet / kubectl), containerd 2.2.9 + runc 1.4.3, CNI Calico v3.33</td></tr>
     <tr><td class="k">Способ развёртывания Kubernetes</td><td><b>kubeadm</b> (<code>kubeadm init</code> с конфигом v1beta4) — скрипт <code>scripts/bootstrap-node.sh</code>: подготовка Ubuntu (swap, модули, sysctl), установка containerd/kubeadm, init, kubeconfig. Одноузловой кластер, поддержано добавление worker-узлов.</td></tr>
-    <tr><td class="k">Реализация Gateway API</td><td><b>Envoy Gateway v1.9.2</b> (Envoy 1.39), Gateway API <b>v1.6.1</b> standard channel; ресурсы GatewayClass, Gateway, HTTPRoute ×7 + политики Envoy Gateway</td></tr>
+    <tr><td class="k">Реализация Gateway API</td><td><b>Envoy Gateway v1.9.2</b> (Envoy 1.39), Gateway API <b>v1.6.1</b> standard channel; ресурсы GatewayClass, Gateway, HTTPRoute ×8 + политики Envoy Gateway</td></tr>
     <tr><td class="k">Инструменты автоматизации</td><td>bash-скрипты (идемпотентные), <b>Helm 4</b> (все компоненты + собственный chart приложения), <b>Kustomize</b>, <code>Makefile</code>; <b>GitHub Actions</b> CI (lint + e2e на Ubuntu 24.04); все версии — в <code>versions.env</code></td></tr>
     <tr><td class="k">Инструмент логирования</td><td><b>Fluentd v1.19.3</b> (DaemonSet, Helm chart fluent/fluentd) → хранилище <b>VictoriaLogs v1.53</b> (LogsQL, Web UI, Grafana)</td></tr>
     <tr><td class="k">Способ развёртывания Prometheus</td><td>Helm chart <b>kube-prometheus-stack 91.8.2</b> (Prometheus Operator v0.94): Prometheus, Alertmanager, Grafana 13, node-exporter, kube-state-metrics; цели — PodMonitor/ServiceMonitor, правила — PrometheusRule</td></tr>
@@ -86,7 +86,7 @@
     <text x="224" y="144" font-size="9.5" text-anchor="middle" font-weight="700">Envoy proxy ×2 (data plane)</text>
     <text x="224" y="158" font-size="8.6" text-anchor="middle">retry · rate limit · basic auth · X-Request-ID</text>
     <rect x="132" y="176" width="184" height="32" rx="3" fill="#fff" stroke="#0b5cad"/>
-    <text x="224" y="189" font-size="9.5" text-anchor="middle" font-weight="700">HTTPRoute ×7</text>
+    <text x="224" y="189" font-size="9.5" text-anchor="middle" font-weight="700">HTTPRoute ×8</text>
     <text x="224" y="202" font-size="8.6" text-anchor="middle">path · header · host · weight 80/20 · redirect</text>
 
     <!-- app -->
@@ -205,7 +205,7 @@
       <td>Надёжность и защита на уровне шлюза без изменения приложения</td>
       <td>burst-запросы к canary → 429; UI без пароля → 401</td></tr>
     <tr><td>CI/CD</td>
-      <td>GitHub Actions: <b>lint</b> — shellcheck, yamllint, helm lint, <b>kubeconform</b> всех манифестов и отрендеренных чартов против схем CRD (Gateway API, Envoy Gateway, Prometheus Operator, cert-manager); <b>e2e</b> — kubeadm на чистой Ubuntu 24.04 → deploy → ~40 smoke-проверок → повторный deploy → smoke; диагностика артефактом при сбое</td>
+      <td>GitHub Actions: <b>lint</b> — shellcheck, yamllint, helm lint, <b>kubeconform</b> всех манифестов и отрендеренных чартов против схем CRD (Gateway API, Envoy Gateway, Prometheus Operator, cert-manager); <b>e2e</b> — kubeadm на чистой Ubuntu 24.04 → deploy → 42 smoke-проверки → повторный deploy → smoke; диагностика артефактом при сбое</td>
       <td>Каждое изменение доказуемо работает и идемпотентно</td>
       <td>Actions → workflow <code>ci</code>; локально <code>make lint</code>, <code>make test</code></td></tr>
     <tr><td>Расширенный мониторинг</td>
@@ -229,7 +229,7 @@
 
   <h3>Главная особенность решения</h3>
   <p>Доказуемая воспроизводимость: весь путь от «голой» Ubuntu 24.04 до работающего кластера на kubeadm с Gateway API, метриками и логами
-  выполняется скриптами и на каждом коммите прогоняется в CI на чистой ВМ дважды подряд, с ~40 автоматическими проверками каждого требования.
+  выполняется скриптами и на каждом коммите прогоняется в CI на чистой ВМ дважды подряд, с 42 автоматическими проверками каждого требования.
   Наблюдаемость сквозная: один запрос с X-Request-ID виден в access-логе Envoy и nginx, а его код ответа и задержка — в метриках Gateway в Prometheus.</p>
 
   <h3>Самое сложное решение</h3>

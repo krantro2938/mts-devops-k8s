@@ -123,7 +123,7 @@ kubelet/cAdvisor, apiserver, etcd, controller-manager, scheduler, kube-proxy, Co
 
 * **Реализация:** [Envoy Gateway](https://gateway.envoyproxy.io) **v1.9.2** (CNCF, open-source, conformance с Gateway API v1.6).
 * **Используемые ресурсы Gateway API:** `GatewayClass` (`envoy`), `Gateway` (`gateway/edge`, listeners
-  `http:80` и `https:443` c TLS Terminate), `HTTPRoute` (7 шт.), в т.ч. фильтры `URLRewrite`,
+  `http:80` и `https:443` c TLS Terminate), `HTTPRoute` (8 шт.), в т.ч. фильтры `URLRewrite`,
   `RequestRedirect`, `ResponseHeaderModifier`, `weight` бэкендов, `timeouts`, `allowedRoutes` с селектором namespace.
 * **Расширения Envoy Gateway (Policy Attachment):** `EnvoyProxy` (NodePort, 2 реплики, PDB, JSON access-лог),
   `ClientTrafficPolicy` (X-Request-ID, TLS ≥ 1.2, таймауты), `BackendTrafficPolicy` (retry, circuit breaker,
@@ -162,7 +162,7 @@ sudo ./scripts/bootstrap-node.sh
 #    cert-manager -> Gateway API CRDs + Envoy Gateway -> Gateway -> VictoriaLogs + Fluentd -> приложение
 ./scripts/deploy.sh
 
-# 3. Автоматическая проверка всего решения (~40 проверок, ~3 мин)
+# 3. Автоматическая проверка всего решения (42 проверки, ~2–3 мин)
 ./scripts/smoke-test.sh
 ```
 
@@ -323,7 +323,7 @@ lq '_time:1h kubernetes.namespace_name:demo log_type:access | stats by (status) 
 | **Расширенный Gateway API** | маршрутизация по пути, заголовку, hostname; URLRewrite; traffic splitting 80/20; HTTPS (TLS Terminate) с сертификатом cert-manager; редирект HTTP→HTTPS; ResponseHeaderModifier; таймауты; несколько backend; общий Gateway с `allowedRoutes` по label namespace (модель ролей platform/app) | раздел 5 |
 | **Политики Envoy Gateway** | retry + circuit breaker, local rate limit (429), Basic Auth (SecurityPolicy), X-Request-ID, TLS ≥ 1.2 | раздел 5 |
 | **CI/CD** (GitHub Actions) | `lint`: shellcheck, yamllint, helm lint, kubeconform по всем манифестам и отрендеренным чартам со схемами CRD; `e2e`: kubeadm на чистой Ubuntu 24.04 → deploy → smoke → повторный deploy → smoke, диагностика при сбое | вкладка Actions, `make lint` |
-| **Автотесты** | `scripts/smoke-test.sh` — ~40 проверок всех требований, ненулевой код при ошибке | `make test` |
+| **Автотесты** | `scripts/smoke-test.sh` — 42 проверки всех требований, ненулевой код при ошибке | `make test` |
 | **Расширенный мониторинг** | HTTP-метрики Gateway (RPS, коды, latency p50/95/99), nginx, CPU/RAM, Fluentd; recording rules; 8 собственных алертов + Alertmanager; дашборд Grafana; все цели control plane kubeadm доступны (bind-address/metrics-адреса в конфиге kubeadm) | раздел 6 |
 | **Централизованные логи с поиском** | Fluentd → VictoriaLogs (LogsQL, UI, Grafana); разбор JSON access-логов в поля; классификация access/error; логи Gateway; сквозной X-Request-ID; дисковый буфер | раздел 7 |
 | **Надёжность** | по 2+ реплики приложения и Envoy, PDB, HPA (CPU), readiness/liveness, preStop, rolling update `maxUnavailable: 0`, retry на Gateway, лимиты ресурсов, systemReserved/eviction у kubelet, ротация логов контейнеров | `kubectl get hpa,pdb -A` |
