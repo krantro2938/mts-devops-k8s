@@ -59,17 +59,17 @@ log "Extracting CRD schemas"
 {
   helm template eg-crds oci://docker.io/envoyproxy/gateway-crds-helm --version "$ENVOY_GATEWAY_VERSION" \
     --set crds.gatewayAPI.enabled=true --set crds.gatewayAPI.channel=standard --set crds.envoyGateway.enabled=true
+  helm template calico-crds crd.projectcalico.org.v1 --repo https://docs.tigera.io/calico/charts --version "$CALICO_VERSION"
   cat "$OUT/rendered/22-kps.yaml" "$OUT/rendered/23-cert-manager.yaml" "$OUT/rendered/20-calico.yaml"
   helm show crds kube-prometheus-stack --repo https://prometheus-community.github.io/helm-charts \
     --version "$KUBE_PROMETHEUS_STACK_VERSION" 2>/dev/null || true
 } | python3 tests/crd2schema.py "$OUT/schemas"
 
-# Calico's Installation CRD is created by the tigera-operator at runtime (not shipped in the chart).
 log "kubeconform (Kubernetes ${K8S_VERSION})"
 kubeconform -strict -summary -kubernetes-version "${K8S_VERSION}" \
   -schema-location default \
   -schema-location "$OUT/schemas/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json" \
-  -skip CustomResourceDefinition,Installation \
+  -skip CustomResourceDefinition \
   "$OUT/rendered/"*.yaml
 
 log "Our own custom resources must have a schema (no silent skips)"

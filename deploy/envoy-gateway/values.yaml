@@ -1,5 +1,10 @@
 # Envoy Gateway (Gateway API implementation) controller values.
-# The chart also installs the Gateway API CRDs (v1.6.1) and Envoy Gateway CRDs.
+# Gateway API CRDs (v1.6.1, standard channel), Envoy Gateway CRDs and the
+# "safe-upgrades" admission policy are applied separately from the
+# gateway-crds-helm chart (scripts/deploy.sh, step gateway-controller),
+# because Helm never upgrades CRDs.
+crds:
+  enabled: false
 deployment:
   envoyGateway:
     resources:

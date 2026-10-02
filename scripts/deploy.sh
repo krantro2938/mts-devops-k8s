@@ -38,7 +38,11 @@ step_namespaces() {
 }
 
 step_cni() {
-  log "Calico CNI ${CALICO_VERSION} (tigera-operator)"
+  log "Calico CNI ${CALICO_VERSION} (CRDs + tigera-operator)"
+  # Since v3.32 the CRDs ship in a separate chart; applied server-side so re-runs upgrade them.
+  helm template calico-crds crd.projectcalico.org.v1 \
+    --repo https://docs.tigera.io/calico/charts --version "${CALICO_VERSION}" | apply -f - >/dev/null
+  kubectl wait --for=condition=Established crd --all --timeout=120s >/dev/null
   helm upgrade --install calico tigera-operator \
     --repo https://docs.tigera.io/calico/charts --version "${CALICO_VERSION}" \
     --namespace tigera-operator -f "${D}/cni/calico-values.yaml" "${HELM_ARGS[@]}"
