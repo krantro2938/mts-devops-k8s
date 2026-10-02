@@ -1,0 +1,43 @@
+# VictoriaLogs Web UI (vmui) and LogsQL API through the Gateway, behind Basic Auth.
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: victorialogs
+  namespace: logging
+spec:
+  parentRefs:
+    - name: edge
+      namespace: gateway
+  hostnames:
+    - logs.demo.local
+  rules:
+    # "/" -> built-in UI
+    - matches:
+        - path:
+            type: Exact
+            value: /
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            path:
+              type: ReplaceFullPath
+              replaceFullPath: /select/vmui/
+            statusCode: 302
+    - backendRefs:
+        - name: victorialogs
+          port: 9428
+---
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: ops-basic-auth
+  namespace: logging
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: victorialogs
+  basicAuth:
+    users:
+      name: ops-basic-auth

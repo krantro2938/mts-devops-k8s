@@ -1,0 +1,23 @@
+# VictoriaLogs (single node): log storage with full-text search (LogsQL),
+# built-in Web UI (/select/vmui) and an HTTP API used by Fluentd, Grafana and smoke tests.
+# Chosen over Elasticsearch/OpenSearch for its tiny footprint (~50-100 MiB RAM)
+# on a single-node cluster, while still accepting standard JSON-lines over HTTP.
+server:
+  fullnameOverride: victorialogs
+  retentionPeriod: 7d
+  retentionDiskSpaceUsage: 4GiB
+  persistentVolume:
+    enabled: true
+    storageClassName: local-path
+    size: 5Gi
+  resources:
+    requests:
+      cpu: 20m
+      memory: 64Mi
+    limits:
+      memory: 512Mi
+  service:
+    # a regular ClusterIP (not headless) so the Gateway can route to it
+    clusterIP: ""
+  serviceMonitor:
+    enabled: true

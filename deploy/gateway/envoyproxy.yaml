@@ -1,0 +1,64 @@
+# Data-plane settings for the Envoy proxies created by Envoy Gateway.
+# Referenced from the GatewayClass (parametersRef).
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: edge-proxy
+  namespace: envoy-gateway-system
+spec:
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyDeployment:
+        replicas: 2
+        container:
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              memory: 256Mi
+      envoyPDB:
+        minAvailable: 1
+      # Bare-metal / VM cluster without a cloud LoadBalancer: expose the Gateway
+      # on fixed NodePorts so the address is predictable for curl checks.
+      envoyService:
+        type: NodePort
+        patch:
+          type: StrategicMerge
+          value:
+            spec:
+              ports:
+                - port: 80
+                  nodePort: 30080     # GATEWAY_HTTP_NODEPORT
+                - port: 443
+                  nodePort: 30443     # GATEWAY_HTTPS_NODEPORT
+  telemetry:
+    # JSON access log of every request through the Gateway (collected by Fluentd).
+    accessLog:
+      settings:
+        - format:
+            type: JSON
+            json:
+              time: "%START_TIME%"
+              source: gateway
+              request_id: "%REQ(X-REQUEST-ID)%"
+              client: "%DOWNSTREAM_REMOTE_ADDRESS_WITHOUT_PORT%"
+              method: "%REQ(:METHOD)%"
+              host: "%REQ(:AUTHORITY)%"
+              path: "%REQ(X-ENVOY-ORIGINAL-PATH?:PATH)%"
+              protocol: "%PROTOCOL%"
+              status: "%RESPONSE_CODE%"
+              flags: "%RESPONSE_FLAGS%"
+              bytes_sent: "%BYTES_SENT%"
+              duration_ms: "%DURATION%"
+              upstream: "%UPSTREAM_HOST%"
+              route: "%ROUTE_NAME%"
+              user_agent: "%REQ(USER-AGENT)%"
+          sinks:
+            - type: File
+              file:
+                path: /dev/stdout
+    metrics:
+      prometheus: {}
+      enableVirtualHostStats: true

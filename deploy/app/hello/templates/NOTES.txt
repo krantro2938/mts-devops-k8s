@@ -1,0 +1,4 @@
+hello {{ .Chart.AppVersion }} deployed (versions: {{ range .Values.versions }}{{ .name }} {{ end }}).
+  curl http://<node-ip>:30080/              -> Hello World! (v1)
+  curl http://<node-ip>:30080/v2            -> v2 (path routing)
+  curl -H 'Host: canary.{{ .Values.gateway.domain }}' http://<node-ip>:30080/   -> 80/20 split

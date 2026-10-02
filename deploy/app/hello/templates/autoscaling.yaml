@@ -1,0 +1,35 @@
+{{- range $v := .Values.versions }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hello-{{ $v.name }}
+  labels:
+    {{- include "hello.labels" $ | nindent 4 }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: hello-{{ $v.name }}
+  minReplicas: {{ $v.minReplicas }}
+  maxReplicas: {{ $v.maxReplicas }}
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ $.Values.hpa.targetCPUUtilizationPercentage }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: hello-{{ $v.name }}
+  labels:
+    {{- include "hello.labels" $ | nindent 4 }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      {{- include "hello.selector" (dict "version" $v.name) | nindent 6 }}
+{{- end }}

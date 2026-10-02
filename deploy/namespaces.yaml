@@ -1,0 +1,56 @@
+# All namespaces of the solution, with Pod Security Admission levels.
+# "mts-demo/gateway-access: true" allows HTTPRoutes of a namespace to attach to
+# the shared Gateway (see allowedRoutes in deploy/gateway/gateway.yaml).
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tigera-operator
+  labels:
+    pod-security.kubernetes.io/enforce: privileged   # CNI needs host access
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cert-manager
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: envoy-gateway-system
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/warn: restricted
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gateway
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: demo
+  labels:
+    pod-security.kubernetes.io/enforce: restricted
+    mts-demo/gateway-access: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+  labels:
+    pod-security.kubernetes.io/enforce: privileged   # node-exporter: hostNetwork/hostPID
+    mts-demo/gateway-access: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: logging
+  labels:
+    pod-security.kubernetes.io/enforce: privileged   # fluentd: hostPath /var/log
+    mts-demo/gateway-access: "true"

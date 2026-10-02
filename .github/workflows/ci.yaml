@@ -1,0 +1,101 @@
+# CI/CD pipeline
+#   lint: shellcheck, yamllint, helm lint, kubeconform (all manifests + rendered charts vs. CRD schemas)
+#   e2e:  real kubeadm cluster on a fresh Ubuntu 24.04 GitHub runner, full deployment,
+#         smoke tests, then a second deployment run + smoke tests again (idempotency).
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install tools (versions from versions.env)
+        run: |
+          set -euo pipefail
+          source versions.env
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq shellcheck yamllint python3-yaml >/dev/null
+          curl -fsSL "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" | sudo tar -xz -C /usr/local/bin --strip-components=1 linux-amd64/helm
+          curl -fsSL https://github.com/yannh/kubeconform/releases/latest/download/kubeconform-linux-amd64.tar.gz | sudo tar -xz -C /usr/local/bin kubeconform
+          curl -fsSL -o kubectl "https://dl.k8s.io/release/v${K8S_VERSION}/bin/linux/amd64/kubectl" && sudo install -m 0755 kubectl /usr/local/bin/kubectl
+
+      - name: Lint and validate manifests
+        run: ./tests/lint.sh
+
+  e2e:
+    needs: lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Prepare runner (stop Docker, it is not needed and owns iptables policies)
+        run: |
+          sudo systemctl stop docker.socket docker || true
+          sudo iptables -P FORWARD ACCEPT
+          df -h / && nproc && free -m
+
+      - name: Bootstrap node (containerd + kubeadm init)
+        run: sudo ./scripts/bootstrap-node.sh
+
+      - name: Bootstrap again (must be a no-op)
+        run: sudo ./scripts/bootstrap-node.sh
+
+      - name: Deploy all components
+        run: ./scripts/deploy.sh
+
+      - name: Smoke tests
+        run: ./scripts/smoke-test.sh
+
+      - name: Deploy again (idempotency)
+        run: ./scripts/deploy.sh
+
+      - name: Smoke tests after re-deploy
+        run: ./scripts/smoke-test.sh
+
+      - name: Show state
+        if: always()
+        run: |
+          kubectl get nodes -o wide || true
+          kubectl get gatewayclass,gateway,httproute -A || true
+          kubectl get pods -A -o wide || true
+          helm list -A || true
+
+      - name: Collect diagnostics
+        if: failure()
+        run: |
+          mkdir -p diag
+          kubectl get all -A -o wide > diag/all.txt 2>&1 || true
+          kubectl get events -A --sort-by=.lastTimestamp > diag/events.txt 2>&1 || true
+          kubectl describe nodes > diag/nodes.txt 2>&1 || true
+          kubectl get gateway,httproute,backendtrafficpolicy,securitypolicy,clienttrafficpolicy -A -o yaml > diag/gateway-api.yaml 2>&1 || true
+          for p in $(kubectl get pods -A --no-headers | awk '$4 != "Running" && $4 != "Completed" {print $1"/"$2}'); do
+            kubectl -n "${p%/*}" describe pod "${p#*/}" > "diag/pod-${p%/*}-${p#*/}.txt" 2>&1 || true
+            kubectl -n "${p%/*}" logs "${p#*/}" --all-containers --tail=200 >> "diag/pod-${p%/*}-${p#*/}.txt" 2>&1 || true
+          done
+          for ns in logging envoy-gateway-system demo; do
+            kubectl -n $ns logs -l app.kubernetes.io/name --all-containers --tail=100 --prefix > "diag/logs-$ns.txt" 2>&1 || true
+          done
+          sudo journalctl -u kubelet --no-pager -n 300 > diag/kubelet.txt 2>&1 || true
+          sudo journalctl -u containerd --no-pager -n 200 > diag/containerd.txt 2>&1 || true
+
+      - name: Upload diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-diagnostics
+          path: diag/

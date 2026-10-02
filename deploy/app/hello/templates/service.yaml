@@ -1,0 +1,19 @@
+{{- range $v := .Values.versions }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-{{ $v.name }}
+  labels:
+    {{- include "hello.labels" $ | nindent 4 }}
+    app.kubernetes.io/version: {{ $v.name }}
+spec:
+  type: ClusterIP
+  selector:
+    {{- include "hello.selector" (dict "version" $v.name) | nindent 4 }}
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      appProtocol: http
+{{- end }}

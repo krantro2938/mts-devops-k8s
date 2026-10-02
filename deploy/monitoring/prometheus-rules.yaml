@@ -1,0 +1,88 @@
+# Recording rules (used by the Grafana dashboard) and alerts for the solution.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: mts-demo
+  namespace: monitoring
+spec:
+  groups:
+    - name: mts-demo.recording
+      interval: 30s
+      rules:
+        - record: mts:gateway_requests:rate1m
+          expr: sum by (envoy_cluster_name, envoy_response_code_class) (rate(envoy_cluster_upstream_rq_xx{envoy_cluster_name=~"httproute/demo/.*"}[1m]))
+        - record: mts:gateway_5xx_ratio:rate5m
+          expr: |
+            sum(rate(envoy_cluster_upstream_rq_xx{envoy_cluster_name=~"httproute/demo/.*", envoy_response_code_class="5"}[5m]))
+            / clamp_min(sum(rate(envoy_cluster_upstream_rq_xx{envoy_cluster_name=~"httproute/demo/.*"}[5m])), 1e-9)
+        - record: mts:gateway_latency_ms:p95_5m
+          expr: histogram_quantile(0.95, sum by (le) (rate(envoy_cluster_upstream_rq_time_bucket{envoy_cluster_name=~"httproute/demo/.*"}[5m])))
+
+    - name: mts-demo.app
+      rules:
+        - alert: HelloAppUnavailable
+          expr: max by (deployment) (kube_deployment_status_replicas_available{namespace="demo", deployment=~"hello-.*"}) < 1
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Deployment {{ $labels.deployment }} has no available replicas"
+        - alert: HelloExporterDown
+          expr: up{namespace="demo", container="exporter"} == 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "nginx exporter on {{ $labels.pod }} is down"
+        - alert: GatewayHigh5xxRatio
+          expr: mts:gateway_5xx_ratio:rate5m > 0.05
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "More than 5% of requests to the demo app return 5xx ({{ $value | humanizePercentage }})"
+        - alert: GatewayHighLatencyP95
+          expr: mts:gateway_latency_ms:p95_5m > 500
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "p95 upstream latency of the demo app is {{ $value }} ms"
+
+    - name: mts-demo.platform
+      rules:
+        - alert: EnvoyProxyDown
+          expr: absent(up{namespace="envoy-gateway-system", job=~".*envoy-proxy.*"} == 1)
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "No Envoy proxy of the Gateway is being scraped"
+        - alert: FluentdDown
+          expr: absent(up{namespace="logging", job=~".*fluentd.*"} == 1)
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Fluentd is not running / not scraped - logs are not collected"
+        - alert: FluentdOutputErrors
+          expr: sum by (pod) (increase(fluentd_output_status_num_errors[10m])) > 0
+          for: 5m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Fluentd {{ $labels.pod }} fails to ship logs to VictoriaLogs"
+        - alert: FluentdBufferBacklog
+          expr: max by (pod) (fluentd_output_status_buffer_queue_length) > 20
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Fluentd {{ $labels.pod }} buffer queue keeps growing"
+        - alert: VictoriaLogsDown
+          expr: absent(up{namespace="logging", job=~".*victorialogs.*"} == 1)
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "VictoriaLogs (log storage) is down"

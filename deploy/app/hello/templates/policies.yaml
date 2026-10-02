@@ -1,0 +1,58 @@
+{{- $gw := .Values.gateway }}
+# Envoy Gateway extension policies attached to the HTTPRoutes (Policy Attachment, GEP-713).
+# Resilience for the main route: retries on connection failures / 502-504
+# (the /error endpoint returns 500 and is intentionally NOT retried).
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: hello-resilience
+  labels:
+    {{- include "hello.labels" . | nindent 4 }}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: hello
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: hello-v2-host
+  retry:
+    numRetries: 2
+    perRetry:
+      backOff:
+        baseInterval: 100ms
+        maxInterval: 1s
+      timeout: 2s
+    retryOn:
+      triggers:
+        - connect-failure
+        - reset
+        - retriable-status-codes
+      httpStatusCodes:
+        - 502
+        - 503
+        - 504
+  circuitBreaker:
+    maxConnections: 1024
+    maxPendingRequests: 1024
+    maxParallelRequests: 1024
+---
+# Local rate limit for the canary host: excess requests get HTTP 429.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: BackendTrafficPolicy
+metadata:
+  name: hello-canary-ratelimit
+  labels:
+    {{- include "hello.labels" . | nindent 4 }}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: hello-canary
+  rateLimit:
+    type: Local
+    local:
+      rules:
+        - limit:
+            requests: {{ $gw.canaryRateLimitRps }}
+            unit: Second

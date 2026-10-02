@@ -1,0 +1,74 @@
+# nginx server config. Rendered by the image entrypoint with envsubst
+# (only variables with the APP_ prefix are substituted, see NGINX_ENVSUBST_FILTER).
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hello-nginx
+  labels:
+    {{- include "hello.labels" . | nindent 4 }}
+data:
+  default.conf.template: |
+    # Structured (JSON) access log -> parsed by Fluentd into separate fields.
+    log_format json_access escape=json
+      '{'
+        '"time":"$time_iso8601",'
+        '"log_type":"access",'
+        '"app_version":"${APP_VERSION}",'
+        '"pod":"$hostname",'
+        '"request_id":"$http_x_request_id",'
+        '"remote_addr":"$remote_addr",'
+        '"x_forwarded_for":"$http_x_forwarded_for",'
+        '"method":"$request_method",'
+        '"host":"$host",'
+        '"uri":"$request_uri",'
+        '"protocol":"$server_protocol",'
+        '"status":$status,'
+        '"bytes_sent":$body_bytes_sent,'
+        '"request_time":$request_time,'
+        '"user_agent":"$http_user_agent"'
+      '}';
+
+    server {
+      listen 8080 default_server;
+      server_name _;
+      server_tokens off;
+
+      access_log /dev/stdout json_access;
+      error_log  /dev/stderr warn;
+
+      root /usr/share/nginx/html;
+
+      # Main check: unambiguous answer.
+      location = / {
+        default_type text/plain;
+        add_header X-App-Version "${APP_VERSION}" always;
+        add_header X-Pod "$hostname" always;
+        return 200 "${APP_MESSAGE}\nversion: ${APP_VERSION}\npod: $hostname\nrequest_id: $http_x_request_id\n";
+      }
+
+      # Probes: not logged to keep the access log clean.
+      location = /healthz {
+        access_log off;
+        default_type text/plain;
+        return 200 "ok\n";
+      }
+
+      # Demo endpoint for HTTP 5xx metrics/alerts.
+      location = /error {
+        default_type text/plain;
+        return 500 "simulated error\n";
+      }
+
+      # Any other path is served from disk: a missing file gives 404 and an
+      # 'open() "..." failed' line in the nginx ERROR log (stderr) -> error log demo.
+      location / {
+      }
+
+      # Basic metrics for nginx-prometheus-exporter (sidecar, localhost only).
+      location = /stub_status {
+        stub_status;
+        access_log off;
+        allow 127.0.0.1;
+        deny all;
+      }
+    }

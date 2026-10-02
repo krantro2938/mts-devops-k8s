@@ -1,0 +1,53 @@
+# Demo application: stock nginx (unprivileged image) configured via ConfigMap.
+# No custom image is built - the image is public and the behaviour is pure config.
+image:
+  repository: nginxinc/nginx-unprivileged
+  tag: 1.30-alpine
+  pullPolicy: IfNotPresent
+
+exporter:
+  enabled: true
+  image:
+    repository: nginx/nginx-prometheus-exporter
+    tag: 1.5.3
+
+# Each entry produces its own Deployment/Service/HPA/PDB ("hello-<name>").
+# Two versions exist to demonstrate path routing, header routing and traffic splitting.
+versions:
+  - name: v1
+    minReplicas: 2
+    maxReplicas: 5
+  - name: v2
+    minReplicas: 2
+    maxReplicas: 3
+
+message: "Hello World!"
+
+resources:
+  requests:
+    cpu: 20m
+    memory: 16Mi
+  limits:
+    cpu: 200m
+    memory: 64Mi
+
+hpa:
+  targetCPUUtilizationPercentage: 70
+
+gateway:
+  name: edge
+  namespace: gateway
+  # namespace where the Envoy proxy pods run (used by the NetworkPolicy)
+  proxyNamespace: envoy-gateway-system
+  domain: demo.local
+  # external HTTPS port used in redirects (NodePort of the Gateway)
+  httpsPort: 30443
+  canaryWeights:
+    v1: 80
+    v2: 20
+  # Local rate limit for the canary host (requests per second per Envoy replica).
+  canaryRateLimitRps: 10
+
+monitoring:
+  namespace: monitoring
+  podMonitor: true

@@ -1,0 +1,198 @@
+# Fluentd DaemonSet: tails container logs on every node, enriches them with
+# Kubernetes metadata, parses the JSON access log of the demo app and ships
+# everything to VictoriaLogs over HTTP (JSON lines).
+#
+# Pipeline:  /var/log/containers/*.log (CRI format)
+#   -> in_tail + cri parser -> concat partial lines -> kubernetes_metadata
+#   -> [demo app, gateway] parse JSON access logs, classify access/error
+#   -> out_http -> http://victorialogs.logging.svc:9428/insert/jsonline
+
+image:
+  # "forward" variant: smallest image that already contains the plugins used below
+  # (kubernetes_metadata_filter, parser-cri, concat, multi-format-parser, prometheus).
+  repository: fluent/fluentd-kubernetes-daemonset
+  tag: v1.19.3-debian-forward-1.1
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    memory: 384Mi
+
+# Needs root to read /var/log/pods/* (owned by root) and to keep its position file.
+podSecurityContext: {}
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["ALL"]
+    add: ["DAC_READ_SEARCH"]
+
+mountDockerContainersDirectory: false   # containerd: logs live in /var/log/pods
+
+tolerations:
+  - operator: Exists   # collect logs from every node, including control-plane
+
+metrics:
+  serviceMonitor:
+    enabled: true
+    additionalLabels: {}
+  prometheusRule:
+    enabled: false   # alerts are defined in deploy/monitoring/prometheus-rules.yaml
+
+dashboards:
+  enabled: "true"
+  labels:
+    grafana_dashboard: "\"1\""
+
+fileConfigs:
+  01_sources.conf: |-
+    <source>
+      @type tail
+      @id in_tail_container_logs
+      @label @KUBERNETES
+      path /var/log/containers/*.log
+      # never read our own output (would loop)
+      exclude_path ["/var/log/containers/fluentd-*_logging_*.log"]
+      pos_file /var/log/fluentd-containers.log.pos
+      pos_file_compaction_interval 1h
+      tag kubernetes.*
+      read_from_head true
+      follow_inodes true
+      refresh_interval 5
+      <parse>
+        # containerd CRI format: "<time> <stream> <P|F> <message>"
+        @type cri
+      </parse>
+    </source>
+
+    # Prometheus metrics of Fluentd itself (scraped via ServiceMonitor)
+    <source>
+      @type prometheus
+      bind 0.0.0.0
+      port 24231
+      metrics_path /metrics
+    </source>
+    <source>
+      @type prometheus_monitor
+    </source>
+    <source>
+      @type prometheus_output_monitor
+    </source>
+
+  02_filters.conf: |-
+    <label @KUBERNETES>
+      # Re-assemble lines split by the runtime (> 16 KiB, logtag "P").
+      # concat deletes the key named in partial_cri_stream_key, so it gets a copy
+      # and the original "stream" (stdout/stderr) is kept for access/error classification.
+      <filter kubernetes.**>
+        @type record_modifier
+        <record>
+          cri_stream ${record["stream"]}
+        </record>
+      </filter>
+      <filter kubernetes.**>
+        @type concat
+        key message
+        use_partial_cri_logtag true
+        partial_cri_logtag_key logtag
+        partial_cri_stream_key cri_stream
+        stream_identity_key stream
+        separator ""
+      </filter>
+
+      # namespace / pod / container / labels / node of the source container
+      <filter kubernetes.**>
+        @type kubernetes_metadata
+        @id filter_kube_metadata
+        skip_labels false
+        skip_container_metadata true
+        skip_namespace_metadata true
+        skip_master_url true
+      </filter>
+
+      <filter kubernetes.**>
+        @type prometheus
+        <metric>
+          name fluentd_input_status_num_records_total
+          type counter
+          desc The total number of incoming records
+          <labels>
+            namespace $.kubernetes.namespace_name
+          </labels>
+        </metric>
+      </filter>
+
+      # --- demo app (nginx) and Gateway (Envoy) write JSON access logs to stdout:
+      # parse them into separate fields (status, uri, request_id, ...).
+      # Non-JSON lines (nginx error log, startup messages) are kept unchanged.
+      <filter kubernetes.var.log.containers.hello-*_demo_nginx-*.log kubernetes.var.log.containers.envoy-*_envoy-gateway-system_envoy-*.log>
+        @type parser
+        key_name message
+        reserve_data true
+        # keep the precise CRI timestamp as event time (ignore "time" inside the JSON)
+        reserve_time true
+        remove_key_name_field false
+        emit_invalid_record_to_error false
+        <parse>
+          @type json
+        </parse>
+      </filter>
+
+      # access/error classification for the demo app (nginx error log goes to stderr)
+      <filter kubernetes.var.log.containers.hello-*_demo_nginx-*.log>
+        @type record_transformer
+        enable_ruby true
+        <record>
+          app hello
+          log_type ${record["log_type"] || (record["stream"] == "stderr" ? "error" : "access")}
+        </record>
+      </filter>
+
+      # explicit RFC3339 timestamp (with nanoseconds) taken from the CRI log line
+      <filter kubernetes.**>
+        @type record_transformer
+        enable_ruby true
+        <record>
+          time ${Time.at(time.to_r).utc.strftime("%Y-%m-%dT%H:%M:%S.%NZ")}
+        </record>
+        remove_keys logtag,cri_stream
+      </filter>
+
+      <match **>
+        @type relabel
+        @label @OUTPUT
+      </match>
+    </label>
+
+  04_outputs.conf: |-
+    <label @OUTPUT>
+      <match **>
+        @type http
+        @id out_victorialogs
+        endpoint http://victorialogs.logging.svc:9428/insert/jsonline
+        open_timeout 5
+        read_timeout 30
+        retryable_response_codes [429, 500, 502, 503, 504]
+        # VictoriaLogs ingestion parameters (https://docs.victoriametrics.com/victorialogs/data-ingestion/)
+        headers {"VL-Msg-Field":"message","VL-Time-Field":"time","VL-Stream-Fields":"kubernetes.namespace_name,kubernetes.container_name,stream"}
+        content_type application/x-ndjson
+        json_array false
+        <format>
+          @type json
+        </format>
+        <buffer>
+          @type file
+          path /var/log/fluentd-buffers/victorialogs.buffer
+          flush_mode interval
+          flush_interval 2s
+          flush_thread_count 2
+          chunk_limit_size 2M
+          total_limit_size 256M
+          overflow_action drop_oldest_chunk
+          retry_type exponential_backoff
+          retry_max_interval 30s
+          retry_forever true
+        </buffer>
+      </match>
+    </label>

@@ -1,0 +1,12 @@
+# metrics-server: resource metrics API for `kubectl top` and the HPA of the demo app.
+args:
+  # kubeadm issues self-signed kubelet serving certificates (no serverTLSBootstrap),
+  # so the kubelet certificate cannot be verified. See README "Known limitations".
+  - --kubelet-insecure-tls
+  - --kubelet-preferred-address-types=InternalIP,Hostname
+resources:
+  requests:
+    cpu: 20m
+    memory: 48Mi
+serviceMonitor:
+  enabled: true

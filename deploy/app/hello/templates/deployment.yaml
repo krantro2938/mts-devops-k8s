@@ -1,0 +1,128 @@
+{{- range $v := .Values.versions }}
+{{- $ctx := dict "version" $v.name }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-{{ $v.name }}
+  labels:
+    {{- include "hello.labels" $ | nindent 4 }}
+    app.kubernetes.io/version: {{ $v.name }}
+spec:
+  # replicas are managed by the HorizontalPodAutoscaler
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+    matchLabels:
+      {{- include "hello.selector" $ctx | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "hello.labels" $ | nindent 8 }}
+        app.kubernetes.io/version: {{ $v.name }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") $ | sha256sum }}
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+      terminationGracePeriodSeconds: 20
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+        fsGroup: 101
+        seccompProfile:
+          type: RuntimeDefault
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              {{- include "hello.selector" $ctx | nindent 14 }}
+      containers:
+        - name: nginx
+          image: "{{ $.Values.image.repository }}:{{ $.Values.image.tag }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          env:
+            - name: APP_VERSION
+              value: {{ $v.name | quote }}
+            - name: APP_MESSAGE
+              value: {{ $.Values.message | quote }}
+            - name: NGINX_ENVSUBST_FILTER
+              value: "^APP_"
+          ports:
+            - name: http
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            periodSeconds: 10
+            failureThreshold: 3
+          lifecycle:
+            # let the Gateway stop sending traffic before nginx exits
+            preStop:
+              sleep:
+                seconds: 5
+          resources:
+            {{- toYaml $.Values.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: templates
+              mountPath: /etc/nginx/templates
+              readOnly: true
+            - name: conf-d
+              mountPath: /etc/nginx/conf.d
+            - name: tmp
+              mountPath: /tmp
+        {{- if $.Values.exporter.enabled }}
+        - name: exporter
+          image: "{{ $.Values.exporter.image.repository }}:{{ $.Values.exporter.image.tag }}"
+          args:
+            - --nginx.scrape-uri=http://127.0.0.1:8080/stub_status
+          ports:
+            - name: metrics
+              containerPort: 9113
+          readinessProbe:
+            httpGet:
+              path: /metrics
+              port: metrics
+          resources:
+            requests:
+              cpu: 5m
+              memory: 16Mi
+            limits:
+              cpu: 100m
+              memory: 32Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop: ["ALL"]
+        {{- end }}
+      volumes:
+        - name: templates
+          configMap:
+            name: hello-nginx
+        - name: conf-d
+          emptyDir:
+            sizeLimit: 1Mi
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi
+{{- end }}

@@ -1,0 +1,20 @@
+{{- if .Values.monitoring.podMonitor }}
+# Prometheus scrapes the nginx-prometheus-exporter sidecar of every hello pod.
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: hello
+  labels:
+    {{- include "hello.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hello
+  podMetricsEndpoints:
+    - port: metrics
+      path: /metrics
+      interval: 15s
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_pod_label_app_kubernetes_io_version]
+          targetLabel: version
+{{- end }}

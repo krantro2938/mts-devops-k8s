@@ -1,0 +1,145 @@
+{{- $gw := .Values.gateway }}
+# 1) Main route, no hostname -> matches any Host (including plain http://<node-ip>:30080/).
+#    Path- and header-based routing between the two versions.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: hello
+  labels:
+    {{- include "hello.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    - name: {{ $gw.name }}
+      namespace: {{ $gw.namespace }}
+      sectionName: http
+    - name: {{ $gw.name }}
+      namespace: {{ $gw.namespace }}
+      sectionName: https
+  rules:
+    # /v2/... -> hello-v2 (prefix stripped)
+    - name: v2-by-path
+      matches:
+        - path:
+            type: PathPrefix
+            value: /v2
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+        {{- include "hello.gwHeader" . | nindent 8 }}
+      backendRefs:
+        - name: hello-v2
+          port: 80
+      timeouts:
+        request: 10s
+    # /v1/... -> hello-v1 (prefix stripped)
+    - name: v1-by-path
+      matches:
+        - path:
+            type: PathPrefix
+            value: /v1
+      filters:
+        - type: URLRewrite
+          urlRewrite:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /
+        {{- include "hello.gwHeader" . | nindent 8 }}
+      backendRefs:
+        - name: hello-v1
+          port: 80
+      timeouts:
+        request: 10s
+    # Header "X-Version: v2" on any path -> hello-v2
+    - name: v2-by-header
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+          headers:
+            - name: X-Version
+              value: v2
+      filters:
+        {{- include "hello.gwHeader" . | nindent 8 }}
+      backendRefs:
+        - name: hello-v2
+          port: 80
+      timeouts:
+        request: 10s
+    # Default -> hello-v1
+    - name: default
+      matches:
+        - path:
+            type: PathPrefix
+            value: /
+      filters:
+        {{- include "hello.gwHeader" . | nindent 8 }}
+      backendRefs:
+        - name: hello-v1
+          port: 80
+      timeouts:
+        request: 10s
+---
+# 2) Hostname routing: v2.<domain> always goes to hello-v2.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: hello-v2-host
+  labels:
+    {{- include "hello.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    - name: {{ $gw.name }}
+      namespace: {{ $gw.namespace }}
+  hostnames:
+    - v2.{{ $gw.domain }}
+  rules:
+    - backendRefs:
+        - name: hello-v2
+          port: 80
+---
+# 3) Traffic splitting (canary): canary.<domain> -> weighted v1/v2.
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: hello-canary
+  labels:
+    {{- include "hello.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    - name: {{ $gw.name }}
+      namespace: {{ $gw.namespace }}
+  hostnames:
+    - canary.{{ $gw.domain }}
+  rules:
+    - backendRefs:
+        - name: hello-v1
+          port: 80
+          weight: {{ $gw.canaryWeights.v1 }}
+        - name: hello-v2
+          port: 80
+          weight: {{ $gw.canaryWeights.v2 }}
+---
+# 4) HTTP -> HTTPS redirect for secure.<domain> (HTTPS listener serves it normally).
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: hello-secure-redirect
+  labels:
+    {{- include "hello.labels" . | nindent 4 }}
+spec:
+  parentRefs:
+    - name: {{ $gw.name }}
+      namespace: {{ $gw.namespace }}
+      sectionName: http
+  hostnames:
+    - secure.{{ $gw.domain }}
+  rules:
+    - filters:
+        - type: RequestRedirect
+          requestRedirect:
+            scheme: https
+            port: {{ $gw.httpsPort }}
+            statusCode: 301

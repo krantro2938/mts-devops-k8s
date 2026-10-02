@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - podmonitors.yaml
+  - prometheus-rules.yaml
+  - routes.yaml
+# Grafana dashboards are discovered by the Grafana sidecar via the label below.
+configMapGenerator:
+  - name: grafana-dashboard-mts-demo
+    namespace: monitoring
+    files:
+      - dashboards/mts-demo-overview.json
+    options:
+      disableNameSuffixHash: true
+      labels:
+        grafana_dashboard: "1"
+      annotations:
+        grafana_folder: MTS Demo

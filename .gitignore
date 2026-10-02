@@ -1,0 +1,9 @@
+# local artefacts
+/submission/
+/diag/
+*.tgz
+.kube/
+*.kubeconfig
+*.pem
+*.key
+.env

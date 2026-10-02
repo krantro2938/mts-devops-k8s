@@ -1,0 +1,49 @@
+# Additional scrape targets (the hello app has its own PodMonitor in the Helm chart,
+# Fluentd / VictoriaLogs / cert-manager / metrics-server use ServiceMonitors from their charts).
+---
+# Envoy proxies (data plane of the Gateway): per-route HTTP request counters,
+# response codes, latency histograms, connections.
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: envoy-proxy
+  namespace: envoy-gateway-system
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: proxy
+      app.kubernetes.io/managed-by: envoy-gateway
+  podMetricsEndpoints:
+    - port: metrics
+      path: /stats/prometheus
+      interval: 15s
+---
+# Envoy Gateway controller (control plane): xDS / reconciliation metrics.
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: envoy-gateway
+  namespace: envoy-gateway-system
+spec:
+  selector:
+    matchLabels:
+      control-plane: envoy-gateway
+  podMetricsEndpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+---
+# Calico Felix (CNI dataplane) - nodeMetricsPort in deploy/cni/calico-values.yaml.
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: calico-node
+  namespace: calico-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: calico-node
+  podMetricsEndpoints:
+    - portNumber: 9091
+      path: /metrics
+      interval: 30s

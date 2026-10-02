@@ -1,0 +1,22 @@
+# Client-facing behaviour of the Gateway (Envoy Gateway extension policy).
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: ClientTrafficPolicy
+metadata:
+  name: edge-client
+  namespace: gateway
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: edge
+  headers:
+    # Keep an X-Request-ID sent by the client (or generate one): the same ID is
+    # visible in the Gateway access log and in the nginx access log -> end-to-end tracing of a request.
+    requestID: PreserveOrGenerate
+  timeout:
+    http:
+      requestReceivedTimeout: 30s
+  connection:
+    bufferLimit: 1Mi
+  tls:
+    minVersion: "1.2"

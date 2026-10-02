@@ -1,0 +1,29 @@
+# Zero-trust for the demo namespace: pods accept traffic only from the
+# Envoy proxies (HTTP) and from Prometheus (metrics); no egress is needed.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: hello
+  labels:
+    {{- include "hello.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: hello
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.gateway.proxyNamespace }}
+      ports:
+        - port: http
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: {{ .Values.monitoring.namespace }}
+      ports:
+        - port: metrics
+  egress: []

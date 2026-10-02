@@ -1,0 +1,22 @@
+# cert-manager: issues the TLS certificate for the HTTPS listener of the Gateway.
+crds:
+  enabled: true
+  keep: true
+prometheus:
+  enabled: true
+  servicemonitor:
+    enabled: true
+resources:
+  requests:
+    cpu: 10m
+    memory: 48Mi
+webhook:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 24Mi
+cainjector:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 48Mi

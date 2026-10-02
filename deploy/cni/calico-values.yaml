@@ -1,0 +1,32 @@
+# tigera-operator Helm chart values (Calico CNI).
+# Calico is chosen over flannel because it enforces NetworkPolicy,
+# which is used to isolate the demo application (deploy/app/networkpolicy.yaml).
+installation:
+  enabled: true
+  kubeletVolumePluginPath: "None"   # Calico CSI driver is not needed
+  controlPlaneReplicas: 1           # single-node cluster
+  calicoNetwork:
+    bgp: Disabled
+    linuxDataplane: Iptables
+    ipPools:
+      - name: default-ipv4-ippool
+        cidr: 192.168.0.0/16          # must match POD_CIDR in versions.env
+        encapsulation: VXLAN
+        natOutgoing: Enabled
+        nodeSelector: all()
+        blockSize: 26
+  # Felix (calico-node) exposes Prometheus metrics on this port (deploy/monitoring/podmonitors.yaml).
+  nodeMetricsPort: 9091
+
+# Optional Calico components are disabled to save resources on a small node.
+apiServer:
+  enabled: false
+goldmane:
+  enabled: false
+whisker:
+  enabled: false
+
+resources:
+  requests:
+    cpu: 20m
+    memory: 64Mi
