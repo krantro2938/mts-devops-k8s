@@ -122,6 +122,10 @@ PASSWORD="$(kubectl -n monitoring get secret ops-credentials -o jsonpath='{.data
 check "Prometheus UI via Gateway without credentials -> 401" expect_code 401 -H "Host: prometheus.${DOMAIN}" "${HTTP}/-/ready"
 check "Prometheus UI via Gateway with Basic Auth -> 200" expect_code 200 -u "admin:${PASSWORD}" -H "Host: prometheus.${DOMAIN}" "${HTTP}/-/ready"
 check "Grafana via Gateway -> healthy" expect_body '"database"' -H "Host: grafana.${DOMAIN}" "${HTTP}/api/health"
+check "Grafana: dashboard 'MTS Demo' provisioned" expect_body '"uid":"mts-demo-overview"' \
+  -u "admin:${PASSWORD}" -H "Host: grafana.${DOMAIN}" "${HTTP}/api/search?query=MTS"
+check "Grafana: VictoriaLogs data source (plugin) healthy" expect_body '"status":"OK"' \
+  -u "admin:${PASSWORD}" -H "Host: grafana.${DOMAIN}" "${HTTP}/api/datasources/uid/victorialogs/health"
 check "VictoriaLogs via Gateway with Basic Auth -> 200" expect_code 200 -u "admin:${PASSWORD}" -H "Host: logs.${DOMAIN}" "${HTTP}/health"
 
 # --------------------------------------------------------------------------

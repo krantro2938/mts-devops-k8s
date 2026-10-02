@@ -174,6 +174,13 @@ kubeadm_init() {
   if [[ -f /etc/kubernetes/admin.conf ]]; then
     ok "cluster already initialised (/etc/kubernetes/admin.conf exists), skipping kubeadm init"
   else
+    # CNI configs left by other runtimes (podman/docker bridge, 10.88.0.0/16) would be
+    # picked up by kubelet before Calico is installed -> move them out of the way.
+    if compgen -G "/etc/cni/net.d/*.conf*" >/dev/null; then
+      warn "moving pre-existing CNI configs to /etc/cni/net.d.bak/"
+      mkdir -p /etc/cni/net.d.bak
+      mv /etc/cni/net.d/*.conf* /etc/cni/net.d.bak/
+    fi
     log "Running kubeadm init (Kubernetes v${K8S_VERSION})"
     envsubst <"${REPO_ROOT}/kubeadm/kubeadm-config.yaml.tpl" >"${TMP}/kubeadm-config.yaml"
     kubeadm config validate --config "${TMP}/kubeadm-config.yaml"
