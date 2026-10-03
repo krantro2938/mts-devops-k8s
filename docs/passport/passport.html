@@ -3,260 +3,291 @@
 <head>
 <meta charset="utf-8">
 <title>Паспорт решения — MTS Engineer Hack DevOps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=block" rel="stylesheet">
 <style>
-  @page { size: A4; margin: 11mm 12mm 11mm 12mm; }
-  :root { --ink:#1b1f24; --mute:#57606a; --line:#d0d7de; --acc:#e30611; --acc2:#0b5cad; --bg:#f6f8fa; }
+  @page { size: A4; margin: 15mm 16mm 13mm 16mm; }
+  :root {
+    --ink: #0f1115; --text: #2a2e35; --mute: #6b7280; --faint: #9ca3af;
+    --line: #e6e8eb; --surface: #f6f7f8; --acc: #e30611;
+  }
   * { box-sizing: border-box; }
-  body { font-family: "Noto Sans", "DejaVu Sans", Arial, sans-serif; color: var(--ink); font-size: 8.6pt; line-height: 1.32; margin: 0; }
-  h1 { font-size: 15pt; margin: 0 0 1mm; }
-  h1 .red { color: var(--acc); }
-  h2 { font-size: 11pt; margin: 3.2mm 0 1.6mm; padding-bottom: .8mm; border-bottom: 1.5px solid var(--acc); }
-  h3 { font-size: 9.2pt; margin: 2.4mm 0 1mm; color: var(--acc2); }
-  p { margin: 0 0 1.4mm; }
-  .sub { color: var(--mute); font-size: 8.4pt; margin-bottom: 2mm; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { margin: 0; font-family: "Inter", "Noto Sans", sans-serif; font-size: 8.7pt; line-height: 1.45; color: var(--text); }
+  code, .mono { font-family: "JetBrains Mono", "Noto Sans Mono", monospace; font-size: 7.6pt; color: var(--ink); }
+  code { background: var(--surface); padding: .2mm 1mm; border-radius: 1mm; white-space: nowrap; }
+  b { font-weight: 600; color: var(--ink); }
+  p { margin: 0 0 2mm; }
+
   .page { page-break-after: always; }
   .page:last-child { page-break-after: auto; }
-  table { width: 100%; border-collapse: collapse; margin: 0 0 1.6mm; }
-  th, td { border: 1px solid var(--line); padding: .9mm 1.4mm; vertical-align: top; text-align: left; }
-  th { background: var(--bg); font-weight: 700; }
-  td.k { width: 30%; font-weight: 600; background: #fbfcfd; }
-  code { font-family: "DejaVu Sans Mono", monospace; font-size: 7.6pt; background: var(--bg); padding: 0 .6mm; border-radius: 2px; }
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; }
-  ul { margin: 0 0 1.4mm 4.5mm; padding: 0; }
-  li { margin: 0 0 .5mm; }
-  .tag { display:inline-block; background:#e7f3e9; color:#1a7f37; border-radius: 2px; padding: 0 1mm; font-weight:600; font-size:7.6pt; }
-  .small { font-size: 7.8pt; }
-  .func td { font-size: 7.9pt; }
-  .func td:first-child { width: 15%; font-weight: 600; }
-  .func td:nth-child(2) { width: 33%; }
-  .func td:nth-child(3) { width: 26%; }
-  .box { border:1px solid var(--line); background: var(--bg); padding: 1.6mm 2.2mm; border-radius: 2px; margin-bottom: 1.6mm; }
-  svg text { font-family: "Noto Sans", "DejaVu Sans", Arial, sans-serif; }
+
+  .eyebrow { font-size: 6.8pt; letter-spacing: .14em; text-transform: uppercase; color: var(--mute); font-weight: 600; }
+  .eyebrow .dot { display: inline-block; width: 1.6mm; height: 1.6mm; border-radius: 50%; background: var(--acc); margin-right: 1.6mm; vertical-align: .15mm; }
+  h1 { font-size: 19pt; line-height: 1.15; letter-spacing: -.02em; color: var(--ink); margin: 2.5mm 0 2mm; font-weight: 700; }
+  .meta { display: flex; gap: 6mm; color: var(--mute); font-size: 8pt; padding-bottom: 5mm; border-bottom: 1px solid var(--line); }
+  .meta b { color: var(--ink); font-weight: 500; }
+  h2 { font-size: 13pt; letter-spacing: -.01em; color: var(--ink); margin: 0; font-weight: 700; }
+  .lead { color: var(--mute); margin: 1mm 0 5mm; }
+  .sec-head { display: flex; align-items: baseline; gap: 3mm; }
+  .sec-head .num { font-size: 13pt; font-weight: 700; color: var(--acc); }
+  h3 { font-size: 9.6pt; color: var(--ink); margin: 0 0 1.4mm; font-weight: 600; }
+
+  .facts { display: grid; grid-template-columns: 1fr 1fr; column-gap: 9mm; margin: 4mm 0 6mm; }
+  .fact { padding: 2.3mm 0; border-bottom: 1px solid var(--line); }
+  .fact .k { font-size: 6.8pt; letter-spacing: .1em; text-transform: uppercase; color: var(--mute); font-weight: 600; margin-bottom: .5mm; }
+  .fact .v { font-size: 9.6pt; font-weight: 600; color: var(--ink); }
+  .fact .d { font-size: 7.9pt; color: var(--mute); }
+
+  figure { margin: 0; }
+  figcaption { font-size: 7.6pt; color: var(--mute); margin-top: 1.5mm; }
+  svg text { font-family: "Inter", "Noto Sans", sans-serif; }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 6mm; border-top: 1px solid var(--line); }
+  .stat { padding: 3.5mm 3mm 0 0; }
+  .stat .n { font-size: 17pt; font-weight: 700; letter-spacing: -.02em; color: var(--ink); line-height: 1.1; }
+  .stat .n small { font-size: 9pt; font-weight: 600; color: var(--mute); margin-left: .6mm; }
+  .stat .l { font-size: 7.6pt; color: var(--mute); margin-top: .8mm; }
+
+  table.items { width: 100%; border-collapse: collapse; }
+  .items th { font-size: 6.6pt; letter-spacing: .12em; text-transform: uppercase; color: var(--mute); font-weight: 600;
+              text-align: left; padding: 0 3mm 2mm 0; border-bottom: 1px solid var(--ink); }
+  .items td { vertical-align: top; padding: 2.8mm 3.5mm 2.8mm 0; border-bottom: 1px solid var(--line); font-size: 8.2pt; }
+  .items tr:last-child td { border-bottom: none; }
+  .items td.name { width: 15%; font-weight: 600; color: var(--ink); font-size: 8.6pt; }
+  .items td.name .i { display: block; font-size: 6.8pt; color: var(--acc); font-weight: 700; letter-spacing: .08em; margin-bottom: .4mm; }
+  .items td:nth-child(2) { width: 36%; }
+  .items td:nth-child(3) { width: 23%; color: var(--mute); }
+  .items td:nth-child(4) { width: 26%; }
+  .items td:last-child { padding-right: 0; }
+
+  .review { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; margin: 5mm 0 7mm; }
+  .review .card { border-top: 2px solid var(--ink); padding-top: 3mm; }
+  .review .card p { margin: 0; }
+  .roadmap { width: 100%; border-collapse: collapse; }
+  .roadmap td { vertical-align: top; padding: 2.3mm 3mm 2.3mm 0; border-bottom: 1px solid var(--line); font-size: 8pt; }
+  .roadmap td:first-child { width: 60%; }
+  .roadmap td:last-child { color: var(--mute); padding-right: 0; }
+  .roadmap th { font-size: 6.6pt; letter-spacing: .12em; text-transform: uppercase; color: var(--mute); font-weight: 600;
+                text-align: left; padding: 0 0 2mm; border-bottom: 1px solid var(--ink); }
+  .tel { display: block; font-size: 6.4pt; font-weight: 700; letter-spacing: .12em; color: var(--acc); margin-bottom: .3mm; }
+  .note { margin-top: 6mm; padding: 3mm 3.5mm; background: var(--surface); border-radius: 1.5mm; font-size: 7.8pt; color: var(--mute); }
+  .note b { color: var(--text); }
 </style>
 </head>
 <body>
 
-<!-- ======================= PAGE 1 ======================= -->
+<!-- ============================ 1 ============================ -->
 <section class="page">
-  <h1>Паспорт решения <span class="red">· MTS Engineer Hack — DevOps</span></h1>
-  <div class="sub">Автор: Схрейдер · Репозиторий: <b>https://github.com/krantro2938/mts-devops-k8s</b> (ветка <code>main</code>) ·
-    Kubernetes на kubeadm + Gateway API + Prometheus + Fluentd, развёртывание и проверка — <code>make up</code></div>
+  <div class="eyebrow"><span class="dot"></span>MTS Engineer Hack · DevOps · Паспорт решения</div>
+  <h1>Веб-приложение в Kubernetes<br>с Gateway API, метриками и логами</h1>
+  <div class="meta">
+    <span>Автор <b>Схрейдер</b></span>
+    <span>Репозиторий <b>github.com/krantro2938/mts-devops-k8s</b></span>
+    <span>Ветка <b>main</b></span>
+  </div>
 
-  <h2>1. Архитектура и состав решения</h2>
-  <table>
-    <tr><td class="k">Версия Kubernetes</td><td><b>v1.36.5</b> (kubeadm / kubelet / kubectl), containerd 2.2.9 + runc 1.4.3, CNI Calico v3.33</td></tr>
-    <tr><td class="k">Способ развёртывания Kubernetes</td><td><b>kubeadm</b> (<code>kubeadm init</code> с конфигом v1beta4) — скрипт <code>scripts/bootstrap-node.sh</code>: подготовка Ubuntu (swap, модули, sysctl), установка containerd/kubeadm, init, kubeconfig. Одноузловой кластер, поддержано добавление worker-узлов.</td></tr>
-    <tr><td class="k">Реализация Gateway API</td><td><b>Envoy Gateway v1.9.2</b> (Envoy 1.39), Gateway API <b>v1.6.1</b> standard channel; ресурсы GatewayClass, Gateway, HTTPRoute ×8 + политики Envoy Gateway</td></tr>
-    <tr><td class="k">Инструменты автоматизации</td><td>bash-скрипты (идемпотентные), <b>Helm 4</b> (все компоненты + собственный chart приложения), <b>Kustomize</b>, <code>Makefile</code>; <b>GitHub Actions</b> CI (lint + e2e на Ubuntu 24.04); все версии — в <code>versions.env</code></td></tr>
-    <tr><td class="k">Инструмент логирования</td><td><b>Fluentd v1.19.3</b> (DaemonSet, Helm chart fluent/fluentd) → хранилище <b>VictoriaLogs v1.53</b> (LogsQL, Web UI, Grafana)</td></tr>
-    <tr><td class="k">Способ развёртывания Prometheus</td><td>Helm chart <b>kube-prometheus-stack 91.8.2</b> (Prometheus Operator v0.94): Prometheus, Alertmanager, Grafana 13, node-exporter, kube-state-metrics; цели — PodMonitor/ServiceMonitor, правила — PrometheusRule</td></tr>
-    <tr><td class="k">ОС, на которой тестировалось</td><td><b>Ubuntu 24.04 LTS</b> (x86_64): чистая ВМ GitHub Actions <code>ubuntu-24.04</code> — полный цикл kubeadm → deploy → smoke-тесты → повторный deploy → smoke-тесты</td></tr>
-    <tr><td class="k">Приложение</td><td>nginx 1.30 (<code>nginx-unprivileged</code>, конфиг в ConfigMap) — версии v1 и v2, ответ <code>Hello World!</code>, JSON access-лог, sidecar nginx-prometheus-exporter</td></tr>
-  </table>
+  <div class="sec-head" style="margin-top:6mm"><span class="num">1</span><h2>Архитектура и состав решения</h2></div>
 
-  <h3>Архитектурная схема</h3>
-  <svg viewBox="0 0 760 340" width="100%" xmlns="http://www.w3.org/2000/svg">
+  <div class="facts">
+    <div class="fact"><div class="k">Версия Kubernetes</div><div class="v">v1.36.5</div><div class="d">containerd 2.2.9 · runc 1.4.3 · CNI Calico 3.33</div></div>
+    <div class="fact"><div class="k">Способ развёртывания Kubernetes</div><div class="v">kubeadm</div><div class="d">конфиг v1beta4, скрипт <code>bootstrap-node.sh</code></div></div>
+    <div class="fact"><div class="k">Реализация Gateway API</div><div class="v">Envoy Gateway v1.9.2</div><div class="d">Gateway API v1.6.1, standard channel</div></div>
+    <div class="fact"><div class="k">Инструменты автоматизации</div><div class="v">Bash · Helm 4 · Kustomize · Make</div><div class="d">CI в GitHub Actions; версии закреплены в <code>versions.env</code></div></div>
+    <div class="fact"><div class="k">Инструмент логирования</div><div class="v">Fluentd v1.19</div><div class="d">DaemonSet → хранилище VictoriaLogs v1.53</div></div>
+    <div class="fact"><div class="k">Способ развёртывания Prometheus</div><div class="v">Helm: kube-prometheus-stack</div><div class="d">Prometheus Operator, Grafana, Alertmanager</div></div>
+    <div class="fact"><div class="k">ОС, на которой тестировалось</div><div class="v">Ubuntu 24.04 LTS</div><div class="d">чистая ВМ и CI-раннер на каждый коммит</div></div>
+    <div class="fact"><div class="k">Приложение</div><div class="v">nginx 1.30 — «Hello World!»</div><div class="d">версии v1 и v2, JSON access-лог, экспортер метрик</div></div>
+  </div>
+
+  <figure>
+  <svg viewBox="0 0 720 312" width="100%" xmlns="http://www.w3.org/2000/svg">
     <defs>
-      <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1b1f24"/></marker>
-      <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#0b5cad"/></marker>
-      <marker id="o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9a6700"/></marker>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#e30611"/></marker>
+      <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6b7280"/></marker>
     </defs>
+
     <!-- cluster -->
-    <rect x="96" y="6" width="658" height="330" rx="6" fill="#fbfcfd" stroke="#8c959f" stroke-dasharray="5 3"/>
-    <text x="106" y="22" font-size="11" font-weight="700" fill="#57606a">Kubernetes v1.36 (kubeadm · containerd · Calico) — Ubuntu 24.04</text>
+    <rect x="104" y="4" width="614" height="304" rx="14" fill="#f6f7f8"/>
+    <text x="124" y="28" font-size="9" font-weight="600" letter-spacing="1.3" fill="#6b7280">KUBERNETES v1.36 · KUBEADM · UBUNTU 24.04</text>
 
     <!-- user -->
-    <rect x="2" y="100" width="84" height="46" rx="8" fill="#fff" stroke="#1b1f24"/>
-    <text x="44" y="119" font-size="9.6" text-anchor="middle" font-weight="700">Пользователь</text>
-    <text x="44" y="134" font-size="8.6" text-anchor="middle">curl / браузер</text>
-    <line x1="86" y1="123" x2="130" y2="123" stroke="#1b1f24" stroke-width="1.6" marker-end="url(#a)"/>
-    <text x="40" y="160" font-size="8.6" text-anchor="middle">NodePort</text>
-    <text x="40" y="172" font-size="8.6" text-anchor="middle">:30080 http</text>
-    <text x="40" y="184" font-size="8.6" text-anchor="middle">:30443 https</text>
+    <rect x="0" y="94" width="94" height="54" rx="10" fill="#fff" stroke="#0f1115" stroke-width="1.2"/>
+    <text x="47" y="117" font-size="10.5" font-weight="600" text-anchor="middle" fill="#0f1115">Пользователь</text>
+    <text x="47" y="133" font-size="9.5" text-anchor="middle" fill="#6b7280">curl · браузер</text>
+    <line x1="94" y1="121" x2="134" y2="121" stroke="#e30611" stroke-width="1.6" marker-end="url(#ar)"/>
+    <text x="47" y="168" font-size="9" text-anchor="middle" fill="#6b7280">HTTP :30080</text>
+    <text x="47" y="181" font-size="9" text-anchor="middle" fill="#6b7280">HTTPS :30443</text>
 
-    <!-- gateway block -->
-    <rect x="120" y="34" width="208" height="182" rx="5" fill="#eef5fc" stroke="#0b5cad"/>
-    <text x="224" y="50" font-size="11" text-anchor="middle" font-weight="700" fill="#0b5cad">Gateway API · Envoy Gateway v1.9</text>
-    <rect x="132" y="58" width="184" height="24" rx="3" fill="#fff" stroke="#0b5cad"/>
-    <text x="224" y="74" font-size="9.5" text-anchor="middle">GatewayClass envoy → EnvoyProxy (NodePort)</text>
-    <rect x="132" y="88" width="184" height="36" rx="3" fill="#fff" stroke="#0b5cad"/>
-    <text x="224" y="102" font-size="9.5" text-anchor="middle" font-weight="700">Gateway edge</text>
-    <text x="224" y="116" font-size="8.8" text-anchor="middle">listeners http:80 · https:443 (TLS, cert-manager)</text>
-    <rect x="132" y="130" width="184" height="40" rx="3" fill="#fff" stroke="#0b5cad"/>
-    <text x="224" y="144" font-size="9.5" text-anchor="middle" font-weight="700">Envoy proxy ×2 (data plane)</text>
-    <text x="224" y="158" font-size="8.6" text-anchor="middle">retry · rate limit · basic auth · X-Request-ID</text>
-    <rect x="132" y="176" width="184" height="32" rx="3" fill="#fff" stroke="#0b5cad"/>
-    <text x="224" y="189" font-size="9.5" text-anchor="middle" font-weight="700">HTTPRoute ×8</text>
-    <text x="224" y="202" font-size="8.6" text-anchor="middle">path · header · host · weight 80/20 · redirect</text>
+    <!-- gateway -->
+    <rect x="136" y="44" width="246" height="154" rx="10" fill="#fff" stroke="#e30611" stroke-width="1.2"/>
+    <text x="154" y="66" font-size="8.5" font-weight="700" letter-spacing="1.2" fill="#e30611">GATEWAY API</text>
+    <text x="154" y="86" font-size="13.5" font-weight="700" fill="#0f1115">Envoy Gateway</text>
+    <line x1="154" y1="98" x2="366" y2="98" stroke="#eceef0"/>
+    <text x="154" y="116" font-size="10" fill="#2a2e35">Gateway <tspan font-weight="600">edge</tspan> · HTTP и HTTPS</text>
+    <text x="154" y="134" font-size="10" fill="#2a2e35"><tspan font-weight="600">8 HTTPRoute</tspan> · путь, заголовок, хост</text>
+    <text x="154" y="152" font-size="10" fill="#2a2e35">canary 80/20 · редирект на HTTPS</text>
+    <text x="154" y="170" font-size="10" fill="#2a2e35">TLS · rate limit · retry · Basic Auth</text>
+    <text x="154" y="188" font-size="9" fill="#9ca3af">ns gateway · 2 реплики Envoy</text>
+
+    <line x1="382" y1="121" x2="438" y2="121" stroke="#e30611" stroke-width="1.6" marker-end="url(#ar)"/>
 
     <!-- app -->
-    <rect x="372" y="34" width="168" height="182" rx="5" fill="#fff4f4" stroke="#e30611"/>
-    <text x="456" y="50" font-size="11" text-anchor="middle" font-weight="700" fill="#e30611">ns demo · приложение</text>
-    <rect x="384" y="60" width="144" height="62" rx="3" fill="#fff" stroke="#e30611"/>
-    <text x="456" y="76" font-size="9.5" text-anchor="middle" font-weight="700">Service hello-v1 → pods ×2–5</text>
-    <text x="456" y="90" font-size="8.6" text-anchor="middle">nginx «Hello World!» v1</text>
-    <text x="456" y="103" font-size="8.6" text-anchor="middle">+ nginx-exporter :9113</text>
-    <text x="456" y="116" font-size="8.6" text-anchor="middle">HPA · PDB</text>
-    <rect x="384" y="130" width="144" height="50" rx="3" fill="#fff" stroke="#e30611"/>
-    <text x="456" y="146" font-size="9.5" text-anchor="middle" font-weight="700">Service hello-v2 → pods ×2–3</text>
-    <text x="456" y="160" font-size="8.6" text-anchor="middle">nginx v2 (canary)</text>
-    <text x="456" y="173" font-size="8.6" text-anchor="middle">+ nginx-exporter :9113</text>
-    <text x="456" y="204" font-size="8.6" text-anchor="middle">NetworkPolicy: только Envoy и Prometheus</text>
-    <line x1="316" y1="192" x2="382" y2="92" stroke="#1b1f24" stroke-width="1.6" marker-end="url(#a)"/>
-    <line x1="316" y1="192" x2="382" y2="156" stroke="#1b1f24" stroke-width="1.6" marker-end="url(#a)"/>
-
-    <!-- monitoring -->
-    <rect x="582" y="34" width="164" height="132" rx="5" fill="#eef9f0" stroke="#1a7f37"/>
-    <text x="664" y="50" font-size="11" text-anchor="middle" font-weight="700" fill="#1a7f37">ns monitoring</text>
-    <rect x="594" y="58" width="140" height="34" rx="3" fill="#fff" stroke="#1a7f37"/>
-    <text x="664" y="72" font-size="9.5" text-anchor="middle" font-weight="700">Prometheus</text>
-    <text x="664" y="85" font-size="8.4" text-anchor="middle">(kube-prometheus-stack)</text>
-    <rect x="594" y="98" width="66" height="24" rx="3" fill="#fff" stroke="#1a7f37"/>
-    <text x="627" y="114" font-size="9" text-anchor="middle">Grafana</text>
-    <rect x="666" y="98" width="68" height="24" rx="3" fill="#fff" stroke="#1a7f37"/>
-    <text x="700" y="114" font-size="9" text-anchor="middle">Alertmanager</text>
-    <text x="664" y="140" font-size="8.4" text-anchor="middle">+ node-exporter, kube-state-</text>
-    <text x="664" y="152" font-size="8.4" text-anchor="middle">metrics, kubelet, control plane</text>
-
-    <!-- logging -->
-    <rect x="582" y="182" width="164" height="132" rx="5" fill="#fff8e6" stroke="#9a6700"/>
-    <text x="664" y="198" font-size="11" text-anchor="middle" font-weight="700" fill="#9a6700">ns logging</text>
-    <rect x="594" y="206" width="140" height="36" rx="3" fill="#fff" stroke="#9a6700"/>
-    <text x="664" y="221" font-size="9.5" text-anchor="middle" font-weight="700">Fluentd DaemonSet</text>
-    <text x="664" y="235" font-size="8.4" text-anchor="middle">CRI parse · k8s meta · JSON</text>
-    <rect x="594" y="262" width="140" height="40" rx="3" fill="#fff" stroke="#9a6700"/>
-    <text x="664" y="278" font-size="9.5" text-anchor="middle" font-weight="700">VictoriaLogs</text>
-    <text x="664" y="292" font-size="8.4" text-anchor="middle">LogsQL · UI · Grafana</text>
-    <line x1="664" y1="242" x2="664" y2="260" stroke="#9a6700" stroke-width="1.6" marker-end="url(#o)"/>
+    <rect x="440" y="44" width="262" height="154" rx="10" fill="#fff" stroke="#d9dce1"/>
+    <text x="458" y="66" font-size="8.5" font-weight="700" letter-spacing="1.2" fill="#6b7280">ПРИЛОЖЕНИЕ · NS DEMO</text>
+    <text x="458" y="86" font-size="13.5" font-weight="700" fill="#0f1115">nginx «Hello World!»</text>
+    <rect x="458" y="100" width="108" height="46" rx="7" fill="#f6f7f8"/>
+    <text x="470" y="119" font-size="11" font-weight="700" fill="#0f1115">v1</text>
+    <text x="470" y="135" font-size="9.2" fill="#6b7280">2–5 подов · HPA</text>
+    <rect x="576" y="100" width="108" height="46" rx="7" fill="#f6f7f8"/>
+    <text x="588" y="119" font-size="11" font-weight="700" fill="#0f1115">v2 <tspan font-size="9.2" font-weight="400" fill="#6b7280">canary</tspan></text>
+    <text x="588" y="135" font-size="9.2" fill="#6b7280">2–3 пода</text>
+    <text x="458" y="170" font-size="10" fill="#2a2e35">+ экспортер метрик nginx</text>
+    <text x="458" y="188" font-size="9" fill="#9ca3af">NetworkPolicy · PDB · non-root</text>
 
     <!-- logs flow -->
-    <path d="M456,216 L456,250 L592,224" fill="none" stroke="#9a6700" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#o)"/>
-    <path d="M224,216 L224,262 L592,230" fill="none" stroke="#9a6700" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#o)"/>
-    <text x="250" y="288" font-size="8.8" fill="#9a6700">stdout/stderr → /var/log/containers</text>
-    <text x="250" y="300" font-size="8.8" fill="#9a6700">(access + error логи, JSON-поля, request_id)</text>
-
+    <line x1="259" y1="198" x2="259" y2="234" stroke="#6b7280" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#ag)"/>
+    <text x="268" y="220" font-size="9" fill="#6b7280">логи всех подов</text>
     <!-- metrics flow -->
-    <path d="M592,70 L540,70" fill="none" stroke="#1a7f37" stroke-width="1.5" stroke-dasharray="2 2" marker-end="url(#g)"/>
-    <path d="M640,58 L640,29 L250,29 L250,33" fill="none" stroke="#1a7f37" stroke-width="1.5" stroke-dasharray="2 2" marker-end="url(#g)"/>
-        <path d="M700,182 L700,168" fill="none" stroke="#1a7f37" stroke-width="1.5" stroke-dasharray="2 2" marker-end="url(#g)"/>
-    <text x="742" y="22" font-size="8.6" text-anchor="end" fill="#1a7f37">scrape: Envoy, EG, nginx, Fluentd, VictoriaLogs, k8s</text>
+    <line x1="571" y1="236" x2="571" y2="200" stroke="#6b7280" stroke-width="1.3" stroke-dasharray="1.5 2.5" marker-end="url(#ag)"/>
+    <text x="580" y="221" font-size="9" fill="#6b7280">метрики всех компонентов</text>
 
-    <!-- legend -->
-    <line x1="110" y1="314" x2="140" y2="314" stroke="#1b1f24" stroke-width="1.6" marker-end="url(#a)"/><text x="146" y="317" font-size="8.8">HTTP-трафик</text>
-    <line x1="220" y1="314" x2="250" y2="314" stroke="#1a7f37" stroke-width="1.5" stroke-dasharray="2 2" marker-end="url(#g)"/><text x="256" y="317" font-size="8.8">сбор метрик (pull)</text>
-    <line x1="360" y1="314" x2="390" y2="314" stroke="#9a6700" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#o)"/><text x="396" y="317" font-size="8.8">поток логов</text>
-    <text x="110" y="331" font-size="8.6" fill="#57606a">UI Grafana / Prometheus / Alertmanager / VictoriaLogs опубликованы через тот же Gateway (HTTPRoute по hostname, Basic Auth).</text>
+    <!-- logging -->
+    <rect x="136" y="236" width="246" height="58" rx="10" fill="#fff" stroke="#d9dce1"/>
+    <text x="154" y="256" font-size="8.5" font-weight="700" letter-spacing="1.2" fill="#6b7280">ЛОГИ · NS LOGGING</text>
+    <text x="154" y="274" font-size="11.5" font-weight="700" fill="#0f1115">Fluentd → VictoriaLogs</text>
+    <text x="154" y="287" font-size="9" fill="#9ca3af">access и error · поля JSON · поиск LogsQL</text>
+
+    <line x1="382" y1="265" x2="438" y2="265" stroke="#6b7280" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#ag)"/>
+
+    <!-- monitoring -->
+    <rect x="440" y="236" width="262" height="58" rx="10" fill="#fff" stroke="#d9dce1"/>
+    <text x="458" y="256" font-size="8.5" font-weight="700" letter-spacing="1.2" fill="#6b7280">МЕТРИКИ · NS MONITORING</text>
+    <text x="458" y="274" font-size="11.5" font-weight="700" fill="#0f1115">Prometheus · Grafana · Alertmanager</text>
+    <text x="458" y="287" font-size="9" fill="#9ca3af">8 алертов · дашборд метрик и логов</text>
   </svg>
+  <figcaption>Сплошная линия — HTTP-трафик, пунктир — логи, точки — сбор метрик. Интерфейсы Grafana, Prometheus и VictoriaLogs
+    опубликованы через тот же Gateway по имени хоста и закрыты паролем.</figcaption>
+  </figure>
 
-  <div class="box small"><b>Как запустить:</b> на чистой Ubuntu 24.04 (4 vCPU / 8 GB):
-    <code>git clone …/mts-devops-k8s &amp;&amp; cd mts-devops-k8s &amp;&amp; make up</code> (или по шагам:
-    <code>sudo ./scripts/bootstrap-node.sh</code> → <code>./scripts/deploy.sh</code> → <code>./scripts/smoke-test.sh</code>).
-    Проверка: <code>curl http://&lt;IP&gt;:30080/</code> → <code>Hello World!</code>. ~10–15 минут, без ручного создания ресурсов.</div>
+  <div class="stats">
+    <div class="stat"><div class="n mono" style="font-size:12pt;padding-top:1.6mm">make up</div><div class="l">одна команда от чистой Ubuntu до проверки</div></div>
+    <div class="stat"><div class="n">12<small>мин</small></div><div class="l">полное развёртывание на чистой ВМ</div></div>
+    <div class="stat"><div class="n">42</div><div class="l">автоматические проверки всех требований</div></div>
+    <div class="stat"><div class="n">2×</div><div class="l">повторный запуск безопасен, проверено в CI</div></div>
+  </div>
 </section>
 
-<!-- ======================= PAGE 2 ======================= -->
+<!-- ============================ 2 ============================ -->
 <section class="page">
-  <h2>2. Реализованный функционал — обязательные пункты</h2>
-  <table class="func">
-    <tr><th>Пункт</th><th>Как реализовано технически</th><th>Обоснование выбора</th><th>Как проверить</th></tr>
-    <tr><td>1. Kubernetes-окружение</td>
-      <td><code>bootstrap-node.sh</code>: swap off, br_netfilter/overlay, sysctl; containerd 2.2 + runc (sha256), kubeadm/kubelet/kubectl 1.36.5 из pkgs.k8s.io (apt hold); <code>kubeadm init</code> c конфигом (systemd cgroup, metrics-адреса control plane открыты для Prometheus); Calico CNI; local-path StorageClass; metrics-server</td>
-      <td>kubeadm — приоритетный, вендор-независимый путь; Calico даёт NetworkPolicy; без облачных сервисов</td>
-      <td><code>kubectl get nodes -o wide</code> → Ready, v1.36.5, Ubuntu 24.04, containerd 2.2.9</td></tr>
-    <tr><td>2. Веб-приложение</td>
-      <td>Собственный Helm-chart <code>deploy/app/hello</code>: nginx-unprivileged (публичный образ), конфиг из ConfigMap (envsubst), 2 версии (v1/v2), Service, HPA, PDB, пробы; access-лог в JSON (stdout), error-лог (stderr); sidecar nginx-prometheus-exporter</td>
-      <td>Своё приложение не требуется — достаточно конфигурации; JSON-лог удобно разбирать в поля</td>
-      <td><code>curl http://IP:30080/</code> → <code>Hello World!</code> + версия и под; <code>/nope</code> → 404, <code>/error</code> → 500</td></tr>
-    <tr><td>3. Gateway API</td>
-      <td>Gateway API CRDs v1.6.1 + Envoy Gateway v1.9.2 (Helm, CRD — server-side apply). <code>GatewayClass envoy</code> → <code>EnvoyProxy</code> (NodePort 30080/30443, 2 реплики, PDB); <code>Gateway edge</code> (ns gateway, listeners http/https, <code>allowedRoutes</code> по label namespace); <code>HTTPRoute hello</code> → Service hello-v1/v2</td>
-      <td>Envoy Gateway — CNCF-проект «Gateway API first», полный standard channel и политики через Policy Attachment, без замены CNI / service mesh</td>
-      <td><code>kubectl get gatewayclass,gateway,httproute -A</code> (Accepted / Programmed); <code>curl -i http://IP:30080/</code> → заголовок <code>x-served-by: envoy-gateway</code></td></tr>
-    <tr><td>4. Мониторинг</td>
-      <td>kube-prometheus-stack; <code>PodMonitor</code> для nginx-exporter, Envoy proxy, Envoy Gateway, Calico; <code>ServiceMonitor</code> для Fluentd, VictoriaLogs, cert-manager, metrics-server; все цели control plane kubeadm (etcd, scheduler, controller-manager, kube-proxy) — UP</td>
-      <td>Operator-подход: цель описывается рядом с компонентом декларативно; Grafana и Alertmanager в комплекте</td>
-      <td><code>kubectl get --raw '/api/v1/namespaces/monitoring/services/kps-prometheus:9090/proxy/api/v1/query?query=up'</code>; UI <code>prometheus.demo.local:30080</code> → Targets; запросы — README §6</td></tr>
-    <tr><td>5. Логирование</td>
-      <td>Fluentd DaemonSet (официальный chart/образ): tail <code>/var/log/containers</code> (CRI) → concat → kubernetes_metadata → разбор JSON access-логов nginx и Envoy → <code>log_type</code> access/error → out_http (JSON lines, дисковый буфер, retry) → VictoriaLogs</td>
-      <td>Fluentd — гибкий пайплайн без сборки своего образа; VictoriaLogs — полнотекстовый поиск при ~100 MB RAM (ES/OpenSearch не помещаются на 1 узел)</td>
-      <td>запрос с уникальным <code>X-Request-ID</code>, затем LogsQL-запрос через API (README §7) → запись <code>log_type=access status=200</code>; UI <code>logs.demo.local:30080</code>, Grafana Explore</td></tr>
-    <tr><td>6. Ubuntu 24.04</td>
-      <td>Скрипты проверяют ОС; CI-задача <code>e2e</code> выполняет весь сценарий на чистой ВМ <code>ubuntu-24.04</code></td>
-      <td>Доказуемая воспроизводимость на целевой ОС при каждом коммите</td>
-      <td>вкладка Actions репозитория, задача e2e</td></tr>
-    <tr><td>7. Автоматизация</td>
-      <td>3 команды или <code>make up</code>; <code>helm upgrade --install</code>, <code>kubectl apply --server-side</code>, проверки состояния в bootstrap; пароли генерируются один раз и хранятся в Secret</td>
-      <td>Минимум зависимостей у эксперта (bash, curl, git); идемпотентность по построению</td>
-      <td>повторный запуск <code>deploy.sh</code> / <code>bootstrap-node.sh</code> → smoke-тесты снова зелёные (так делает CI)</td></tr>
-    <tr><td>8. Документация</td>
-      <td>README: архитектура (Mermaid), версии, требования, шаги, проверки, ограничения; <code>docs/DECISIONS.md</code></td>
-      <td>Эксперт может проверить каждый пункт копированием команд</td>
-      <td>README.md</td></tr>
-  </table>
+  <div class="sec-head"><span class="num">2</span><h2>Реализованный функционал — обязательные пункты</h2></div>
+  <p class="lead">Всё проверяется автоматически: <code>./scripts/smoke-test.sh</code>. Ниже — ручная проверка, <code>IP</code> — адрес узла.</p>
 
-  <h2 style="page-break-before: always">2.1 Дополнительные улучшения</h2>
-  <table class="func">
-    <tr><th>Улучшение</th><th>Что и как реализовано</th><th>Обоснование</th><th>Как проверить</th></tr>
-    <tr><td>Расширенный Gateway API</td>
-      <td>Маршрутизация по <b>пути</b> (<code>/v2</code> + URLRewrite), <b>заголовку</b> (<code>X-Version: v2</code>), <b>hostname</b> (<code>v2.demo.local</code>); <b>traffic splitting</b> 80/20 (<code>canary.demo.local</code>); <b>HTTPS</b> TLS Terminate с сертификатом cert-manager (свой CA); <b>редирект</b> HTTP→HTTPS; ResponseHeaderModifier; timeouts; несколько backend; UI мониторинга/логов как отдельные HTTPRoute из своих namespace</td>
-      <td>Показывает реальные сценарии: canary-релиз, версионирование API, мульти-тенантный общий Gateway</td>
-      <td>таблица в README §5; <code>smoke-test.sh</code></td></tr>
-    <tr><td>Политики Envoy Gateway</td>
-      <td><code>BackendTrafficPolicy</code>: retry (connect-failure/reset/502-504) + circuit breaker; <b>local rate limit</b> 10 rps → 429; <code>SecurityPolicy</code>: <b>Basic Auth</b> на Prometheus/Alertmanager/VictoriaLogs; <code>ClientTrafficPolicy</code>: сквозной <b>X-Request-ID</b>, TLS ≥ 1.2</td>
-      <td>Надёжность и защита на уровне шлюза без изменения приложения</td>
-      <td>burst-запросы к canary → 429; UI без пароля → 401</td></tr>
-    <tr><td>CI/CD</td>
-      <td>GitHub Actions: <b>lint</b> — shellcheck, yamllint, helm lint, <b>kubeconform</b> всех манифестов и отрендеренных чартов против схем CRD (Gateway API, Envoy Gateway, Prometheus Operator, cert-manager); <b>e2e</b> — kubeadm на чистой Ubuntu 24.04 → deploy → 42 smoke-проверки → повторный deploy → smoke; диагностика артефактом при сбое</td>
-      <td>Каждое изменение доказуемо работает и идемпотентно</td>
-      <td>Actions → workflow <code>ci</code>; локально <code>make lint</code>, <code>make test</code></td></tr>
-    <tr><td>Расширенный мониторинг</td>
-      <td>HTTP-метрики Gateway: <b>RPS, коды ответов, latency p50/p95/p99</b>, 429; nginx; <b>CPU/RAM</b> подов; Fluentd; recording rules; <b>8 алертов</b> (5xx, latency, недоступность, Fluentd, VictoriaLogs) → Alertmanager; дашборд Grafana «MTS Demo» (метрики + живые логи)</td>
-      <td>Golden signals для сервиса и наблюдаемость самой системы логирования</td>
-      <td><code>make traffic</code>, Grafana <code>grafana.demo.local:30080</code> (<code>make creds</code>)</td></tr>
-    <tr><td>Централизованные логи с поиском</td>
-      <td>Разбор JSON в поля (status, uri, request_id, request_time…), классификация access/error, логи Gateway, корреляция по X-Request-ID, хранение 7 дней, поиск LogsQL, UI и Grafana</td>
-      <td>Логи пригодны для расследований и аналитики, а не только «сырые строки»</td>
-      <td>README §7 (запрос по request_id находит запись и в nginx, и в Envoy)</td></tr>
-    <tr><td>Надёжность и безопасность</td>
-      <td>≥2 реплики, HPA, PDB, пробы, preStop, rolling update без простоя; NetworkPolicy default-deny; Pod Security Admission (<code>restricted</code>); non-root, read-only rootfs, drop ALL, seccomp; случайные пароли только в Secret; sha256 скачиваемых бинарников; закреплённые версии</td>
-      <td>Базовые production-практики</td>
-      <td><code>kubectl get hpa,pdb,netpol -A</code>; <code>kubectl get ns --show-labels</code></td></tr>
+  <table class="items">
+    <tr><th>Пункт</th><th>Как реализовано</th><th>Почему так</th><th>Как проверить</th></tr>
+    <tr><td class="name"><span class="i">01</span>Kubernetes</td>
+      <td><code>kubeadm init</code> с конфигом v1beta4; containerd и runc с проверкой sha256; Calico; StorageClass local-path; metrics-server.</td>
+      <td>kubeadm — приоритет по условию, без привязки к вендору. Calico поддерживает NetworkPolicy.</td>
+      <td><code>kubectl get nodes -o wide</code><br>→ Ready, v1.36.5</td></tr>
+    <tr><td class="name"><span class="i">02</span>Веб-приложение</td>
+      <td>Свой Helm-чарт: nginx-unprivileged, конфиг в ConfigMap, версии v1 и v2, HPA, PDB, пробы. Access-лог в JSON, error-лог отдельно.</td>
+      <td>Код не нужен — достаточно конфигурации. JSON-лог сразу раскладывается на поля.</td>
+      <td><code>curl http://IP:30080/</code><br>→ Hello World!</td></tr>
+    <tr><td class="name"><span class="i">03</span>Gateway API</td>
+      <td>GatewayClass <code>envoy</code> → Gateway <code>edge</code> (HTTP и HTTPS, NodePort 30080/30443) → HTTPRoute → Service приложения.</td>
+      <td>Envoy Gateway — проект CNCF, изначально созданный под Gateway API. Не требует замены CNI или service mesh.</td>
+      <td><code>kubectl get gateway,httproute -A</code><br>→ Programmed, Accepted</td></tr>
+    <tr><td class="name"><span class="i">04</span>Мониторинг</td>
+      <td>kube-prometheus-stack. PodMonitor и ServiceMonitor для nginx, Envoy, Fluentd и VictoriaLogs. Метрики control plane открыты в конфиге kubeadm.</td>
+      <td>Цели описаны декларативно рядом с каждым компонентом. Grafana и Alertmanager входят в стек.</td>
+      <td>запросы PromQL из README §6<br>→ все цели в состоянии UP</td></tr>
+    <tr><td class="name"><span class="i">05</span>Логирование</td>
+      <td>Fluentd DaemonSet читает <code>/var/log/containers</code>, добавляет метаданные Kubernetes, разбирает JSON, разделяет access и error, пишет в VictoriaLogs.</td>
+      <td>Официальный образ Fluentd без доработок. VictoriaLogs занимает ~100 MB памяти, Elasticsearch — 1–2 GB.</td>
+      <td>запрос с <code>X-Request-ID</code>, затем поиск из README §7 → запись в логах nginx и Envoy</td></tr>
+    <tr><td class="name"><span class="i">06</span>Ubuntu 24.04</td>
+      <td>Скрипт проверяет ОС. Полный сценарий выполнен на чистой ВМ Ubuntu 24.04 и выполняется в CI на каждом коммите.</td>
+      <td>Работа на целевой ОС подтверждается при каждом изменении.</td>
+      <td>GitHub Actions<br>→ задача <code>e2e</code></td></tr>
+    <tr><td class="name"><span class="i">07</span>Автоматизация</td>
+      <td><code>make up</code> или три скрипта. <code>helm upgrade --install</code> и <code>kubectl apply --server-side</code>. Пароли генерируются при установке и хранятся в Secret.</td>
+      <td>Эксперту нужны только bash, curl и git. Повторный запуск ничего не ломает.</td>
+      <td>повторный <code>make up</code><br>→ снова 42 из 42</td></tr>
+    <tr><td class="name"><span class="i">08</span>Документация</td>
+      <td>README со всеми обязательными разделами; обоснование решений — <code>docs/DECISIONS.md</code>.</td>
+      <td>Любую проверку можно повторить копированием команды.</td>
+      <td><code>README.md</code></td></tr>
   </table>
 </section>
 
-<!-- ======================= PAGE 3 ======================= -->
+<!-- ============================ 3 ============================ -->
 <section class="page">
-  <h2>3. Ревью работы и потенциальное масштабирование</h2>
+  <div class="sec-head"><span class="num">2</span><h2>Реализованный функционал — дополнительные улучшения</h2></div>
+  <p class="lead">Улучшения тоже покрыты автоматическими проверками и описаны в README §8.</p>
 
-  <h3>Главная особенность решения</h3>
-  <p>Доказуемая воспроизводимость: весь путь от «голой» Ubuntu 24.04 до работающего кластера на kubeadm с Gateway API, метриками и логами
-  выполняется скриптами и на каждом коммите прогоняется в CI на чистой ВМ дважды подряд, с 42 автоматическими проверками каждого требования.
-  Наблюдаемость сквозная: один запрос с X-Request-ID виден в access-логе Envoy и nginx, а его код ответа и задержка — в метриках Gateway в Prometheus.</p>
+  <table class="items">
+    <tr><th>Улучшение</th><th>Что и как реализовано</th><th>Почему</th><th>Как проверить</th></tr>
+    <tr><td class="name"><span class="i">01</span>Маршрутизация Gateway API</td>
+      <td>Маршруты по пути (<code>/v2</code>), заголовку (<code>X-Version</code>) и хосту (<code>v2.demo.local</code>). Canary 80/20. HTTPS с сертификатом cert-manager и редирект с HTTP.</td>
+      <td>Реальные сценарии: canary-релиз, версии API, общий Gateway для нескольких команд.</td>
+      <td>команды из README §5</td></tr>
+    <tr><td class="name"><span class="i">02</span>Политики Gateway</td>
+      <td>Retry и circuit breaker к приложению. Ограничение 10 запросов/с с ответом 429. Basic Auth на интерфейсы мониторинга и логов. Сквозной <code>X-Request-ID</code>.</td>
+      <td>Надёжность и защита на уровне шлюза, без изменений в приложении.</td>
+      <td>серия запросов → 429;<br>UI без пароля → 401</td></tr>
+    <tr><td class="name"><span class="i">03</span>Расширенный мониторинг</td>
+      <td>Запросы в секунду, коды ответов и задержки p50/p95/p99 на Gateway; CPU и память подов; 8 алертов в Alertmanager; дашборд Grafana с метриками и живыми логами.</td>
+      <td>Ключевые сигналы сервиса и контроль самой системы логирования.</td>
+      <td><code>make traffic</code>,<br>Grafana (<code>make creds</code>)</td></tr>
+    <tr><td class="name"><span class="i">04</span>Логи с поиском</td>
+      <td>Поля status, uri, request_id, время ответа. Логи Gateway и приложения связаны одним request_id. Хранение 7 дней, свой интерфейс и Grafana.</td>
+      <td>Логи пригодны для расследований, а не только для чтения строк.</td>
+      <td>поиск по request_id<br>(README §7)</td></tr>
+    <tr><td class="name"><span class="i">05</span>CI</td>
+      <td>Проверка shell, YAML и Helm; проверка всех манифестов по схемам CRD. Затем на чистой Ubuntu 24.04: kubeadm, развёртывание, 42 проверки, повторное развёртывание и проверки ещё раз.</td>
+      <td>Каждое изменение доказуемо работает и безопасно для повторного запуска.</td>
+      <td>GitHub Actions,<br><code>make lint</code></td></tr>
+    <tr><td class="name"><span class="i">06</span>Надёжность и безопасность</td>
+      <td>Не меньше 2 реплик, HPA, PDB, обновление без простоя; NetworkPolicy по умолчанию запрещает трафик; Pod Security <code>restricted</code>, non-root, файловая система только для чтения; секреты только в Secret.</td>
+      <td>Базовые практики production-кластера.</td>
+      <td><code>kubectl get hpa,pdb,netpol -A</code></td></tr>
+  </table>
+</section>
 
-  <h3>Самое сложное решение</h3>
-  <p>Выбор хранилища логов для Fluentd: Elasticsearch/OpenSearch (стандарт, но ≥1–2 GB RAM на JVM), Loki (лёгкий, но в официальном образе Fluentd нет плагина — пришлось бы собирать и публиковать свой образ)
-  или VictoriaLogs. Выбран VictoriaLogs: укладывается в ~100 MB RAM на одном узле, принимает JSON lines встроенным HTTP-выводом Fluentd (официальный образ без доработок),
-  даёт полнотекстовый поиск по всем полям, UI и интеграцию с Grafana. Второе непростое решение — публикация Gateway через фиксированные NodePort вместо MetalLB, чтобы не зависеть от сети стенда эксперта.</p>
+<!-- ============================ 4 ============================ -->
+<section class="page">
+  <div class="sec-head"><span class="num">3</span><h2>Ревью работы и потенциальное масштабирование</h2></div>
 
-  <h3>Предложения по дальнейшему развитию</h3>
-  <table class="small">
-    <tr><th style="width:34%">Что добавить</th><th>Что для этого нужно</th></tr>
-    <tr><td><b>HA control plane</b> (3 узла, kube-vip) и <b>MetalLB / BGP</b>-анонс адреса Gateway в сеть оператора вместо NodePort</td><td>3+ ВМ, VIP-адрес; для BGP — пиринг с маршрутизаторами (сетевая команда)</td></tr>
-    <tr><td><b>GitOps</b> (Argo CD / Flux): кластер сам применяет состояние из Git, промоушен dev → stage → prod</td><td>доступ кластера к Git; отдельные окружения</td></tr>
-    <tr><td>Телеком-протоколы через Gateway API: <b>GRPCRoute</b> (HTTP/2, 5G SBA), <b>TCPRoute/UDPRoute</b> (SIP, Diameter, RADIUS), <b>TLSRoute</b> passthrough</td><td>experimental channel Gateway API; тестовые CNF/стенды сигнализации</td></tr>
-    <tr><td><b>Глобальный rate limit</b> (на абонента/ключ API) и <b>OIDC/JWT</b>-аутентификация на Gateway</td><td>Redis для Envoy Rate Limit Service; IdP (Keycloak / корпоративный SSO)</td></tr>
-    <tr><td>Долгосрочное хранение и масштабирование: <b>VictoriaMetrics/Thanos</b> для метрик, <b>VictoriaLogs cluster</b>, архив в S3; требования регуляторов к срокам хранения логов</td><td>S3-совместимое объектное хранилище (MinIO / Ceph RGW), диски под retention</td></tr>
-    <tr><td><b>Трейсинг</b>: OpenTelemetry Collector + Jaeger/Tempo, трассировка из Envoy</td><td>доп. ресурсы под хранилище трасс</td></tr>
-    <tr><td><b>Supply-chain security</b>: Trivy-сканирование, подпись образов (cosign), политики Kyverno, внешние секреты (Vault + ESO)</td><td>Vault/секрет-хранилище, приватный registry</td></tr>
-    <tr><td><b>Air-gapped</b> установка для изолированных площадок (edge/MEC): зеркало образов и чартов</td><td>Harbor / приватный registry и Helm-репозиторий на площадке</td></tr>
-    <tr><td>Нагрузка CNF: <b>Multus + SR-IOV / DPDK</b>, CPU pinning и HugePages (Topology Manager)</td><td>серверы с SR-IOV NIC, настройка BIOS/ядра</td></tr>
-    <tr><td>Интеграция алертов с NOC (Telegram / e-mail / ServiceDesk), SLO-алерты по error budget</td><td>каналы/токены уведомлений (через Secret, не в git)</td></tr>
+  <div class="review">
+    <div class="card">
+      <h3>Главная особенность</h3>
+      <p>Решение доказуемо воспроизводимо: одна команда доводит чистую Ubuntu 24.04 до работающего кластера с Gateway API, метриками и логами, а CI на каждом коммите проходит этот путь дважды с 42 проверками.
+      Наблюдаемость сквозная: один запрос с <code>X-Request-ID</code> находится в логах Envoy и nginx, а его код ответа и задержка видны в Prometheus.</p>
+    </div>
+    <div class="card">
+      <h3>Самое сложное решение</h3>
+      <p>Выбор хранилища логов для Fluentd: Elasticsearch требует 1–2 GB памяти только под JVM, а для Loki нет плагина в официальном образе Fluentd — пришлось бы собирать свой образ.
+      Выбран VictoriaLogs: около 100 MB памяти, приём JSON встроенным HTTP-выводом Fluentd, полнотекстовый поиск, свой интерфейс и плагин для Grafana.</p>
+    </div>
+  </div>
+
+  <h3 style="margin-bottom:3mm">Предложения по развитию</h3>
+  <table class="roadmap">
+    <tr><th>Что добавить</th><th>Что для этого нужно</th></tr>
+    <tr><td><b>Отказоустойчивый control plane</b> из 3 узлов и публикация Gateway через MetalLB или BGP вместо NodePort</td><td>3+ ВМ, виртуальный IP; для BGP — пиринг с маршрутизаторами</td></tr>
+    <tr><td><b>GitOps</b> (Argo CD или Flux): окружения dev → stage → prod из Git</td><td>доступ кластера к Git, отдельные кластеры окружений</td></tr>
+    <tr><td><span class="tel">ТЕЛЕКОМ</span><b>GRPCRoute, TCPRoute, UDPRoute</b> для 5G SBA, SIP, Diameter и RADIUS</td><td>experimental channel Gateway API, тестовые CNF</td></tr>
+    <tr><td><span class="tel">ТЕЛЕКОМ</span><b>Ограничение запросов на абонента</b> и вход через OIDC/JWT на Gateway</td><td>Redis для Envoy Rate Limit, корпоративный IdP</td></tr>
+    <tr><td><span class="tel">ТЕЛЕКОМ</span><b>Долгое хранение</b>: VictoriaMetrics или Thanos, кластер VictoriaLogs, архив под требования регулятора</td><td>S3-совместимое хранилище (MinIO, Ceph), диски</td></tr>
+    <tr><td><b>Трейсинг</b>: OpenTelemetry Collector и Tempo, трассы из Envoy</td><td>ресурсы под хранилище трасс</td></tr>
+    <tr><td><b>Безопасность поставки</b>: сканирование Trivy, подпись cosign, политики Kyverno, Vault для секретов</td><td>Vault, приватный registry</td></tr>
+    <tr><td><span class="tel">ТЕЛЕКОМ</span><b>Установка без интернета</b> на изолированных площадках edge и MEC</td><td>Harbor и зеркало Helm-чартов на площадке</td></tr>
+    <tr><td><span class="tel">ТЕЛЕКОМ</span><b>Нагрузки CNF</b>: Multus, SR-IOV, DPDK, закрепление CPU и HugePages</td><td>серверы с SR-IOV-картами, настройка BIOS и ядра</td></tr>
+    <tr><td><b>Алерты в NOC</b>: Telegram, почта, ServiceDesk; SLO-алерты по бюджету ошибок</td><td>токены каналов уведомлений через Secret</td></tr>
   </table>
 
-  <h3>Известные ограничения (подробно — README §10)</h3>
-  <ul class="small">
-    <li>Один control-plane узел; публикация через NodePort 30080/30443; хранилище local-path (данные на диске узла, без репликации).</li>
-    <li>TLS на собственном CA для <code>demo.local</code> (для curl — <code>--cacert</code>); metrics-server с <code>--kubelet-insecure-tls</code>; Fluentd работает от root (только <code>DAC_READ_SEARCH</code>).</li>
-  </ul>
+  <div class="note"><b>Известные ограничения.</b> Один узел control plane; доступ через NodePort 30080/30443; данные на диске узла без репликации;
+    сертификат от собственного CA для <code>demo.local</code>. Подробно — README §10.</div>
 </section>
 
 </body>
