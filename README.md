@@ -134,16 +134,22 @@ kubelet/cAdvisor, apiserver, etcd, controller-manager, scheduler, kube-proxy, Co
 * **ОС:** Ubuntu **24.04** LTS (Server/Cloud image), x86_64 или arm64. Чистая ВМ или bare-metal.
 * **Ресурсы:** рекомендуется **4 vCPU, 8 GB RAM, 30 GB диска** (минимум 2 vCPU / 4 GB — kubeadm требует ≥ 2 CPU).
 * **Доступ:** пользователь с `sudo`, исходящий доступ в интернет (apt, GitHub releases, Docker Hub, registry.k8s.io, quay.io, Helm-репозитории).
-* Нужные утилиты (`git`, `make`, `curl`) есть в Ubuntu по умолчанию; всё остальное (`kubeadm`, `kubectl`,
-  `helm`, `containerd`, `jq`, …) ставит `bootstrap-node.sh`.
+* `git` и `curl` есть в Ubuntu по умолчанию; **`make` в cloud/minimal-образах отсутствует** —
+  для варианта 1 поставьте его: `sudo apt-get install -y make` (вариант 2 работает без `make`).
+  Всё остальное (`kubeadm`, `kubectl`, `helm`, `containerd`, `jq`, …) ставит `bootstrap-node.sh`.
 * Swap будет выключен скриптом (требование kubelet). Порты узла: `6443` (API), `30080`/`30443` (Gateway).
-* Протестировано: **Ubuntu 24.04 LTS** — GitHub Actions runner `ubuntu-24.04` (4 vCPU, 16 GB), см. CI.
+* Протестировано на **Ubuntu 24.04 LTS**:
+  * чистая ВМ из официального cloud-образа Ubuntu 24.04.5 (QEMU/KVM, 4 vCPU, 7 GB RAM): `make up` — 12 мин,
+    42/42 проверок; повторный `make up` — 1,5 мин, 42/42, без перезапусков подов; после перезагрузки ВМ
+    кластер поднимается сам, 42/42;
+  * GitHub Actions runner `ubuntu-24.04` (4 vCPU, 16 GB) на каждый push, см. CI.
 
 ## 4. Развёртывание
 
 ### Вариант 1 — одной командой
 
 ```bash
+sudo apt-get install -y make   # в Ubuntu cloud-образе make не предустановлен
 git clone https://github.com/krantro2938/mts-devops-k8s.git
 cd mts-devops-k8s
 make up          # = make cluster (sudo) + make deploy + make test
